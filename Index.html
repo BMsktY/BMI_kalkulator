@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2f805c">
+    <title>bodyfit — Kalkulator BMI & Kebugaran</title>
+    
+    <!-- Phosphor Icons & Chart.js -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- CSS Styles -->
+    <style>
+        :root {
+            color-scheme: light;
+            --ink: #1e293b;
+            --muted: #64748b;
+            --green: #2f805c;
+            --green-dark: #1e533c;
+            --lime: #d4ef87;
+            --paper: #f8fafc;
+            --card: #ffffff;
+            --line: #e2e8f0;
+            --shadow: 0 10px 25px rgba(30, 41, 59, 0.05);
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            color: var(--ink);
+            background: radial-gradient(circle at top left, rgba(212, 239, 135, 0.3), transparent 30rem), var(--paper);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        button, input, select { font: inherit; }
+        button { cursor: pointer; border: none; outline: none; }
+
+        .app-layout { display: flex; width: 100%; min-height: 100vh; position: relative; }
+        
+        .sidebar {
+            width: 260px;
+            background: var(--card);
+            border-right: 1px solid var(--line);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 16px;
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            z-index: 40;
+            transition: transform 0.3s ease;
+        }
+
+        /* BRAND UNIFIED COLOR */
+        .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 22px; color: var(--ink); padding: 0 8px 20px; border-bottom: 1px solid var(--line); letter-spacing: -0.5px; }
+        .brand-text { color: var(--ink); font-weight: 900; }
+        .brand-text span { color: var(--green); }
+
+        .nav-list { display: flex; flex-direction: column; gap: 6px; margin-top: 20px; list-style: none; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; border-radius: var(--radius-md);
+            font-size: 14px; font-weight: 600; color: var(--muted);
+            text-decoration: none; transition: .2s; cursor: pointer;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(47, 128, 92, 0.08); color: var(--green); }
+        .nav-item i { font-size: 20px; }
+
+        .user-block {
+            border-top: 1px solid var(--line);
+            padding-top: 16px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--lime); color: var(--green-dark); display: grid; place-items: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
+        .user-details { display: flex; flex-direction: column; overflow: hidden; }
+        .user-name { font-size: 14px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-status { font-size: 11px; color: var(--muted); }
+
+        .btn-logout {
+            width: 100%; padding: 12px; border-radius: var(--radius-md);
+            background: #fdf2f0; color: #d56b58; font-weight: 700; font-size: 13px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: .2s; flex-shrink: 0;
+        }
+        .btn-logout:hover { background: #fbe5e1; }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            min-width: 0;
+            padding: 24px;
+            max-width: 1200px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .mobile-header {
+            display: none; justify-content: space-between; align-items: center;
+            background: var(--card); padding: 12px 16px; border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            min-height: 58px;
+        }
+        .mobile-header .brand { flex-shrink: 0; }
+        .btn-menu { background: transparent; font-size: 24px; color: var(--ink); }
+
+        .welcome-card {
+            background: linear-gradient(135deg, var(--green), var(--green-dark));
+            color: white; border-radius: var(--radius-lg); padding: 24px;
+            box-shadow: var(--shadow); position: relative; overflow: hidden;
+        }
+        .welcome-card h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+        .welcome-card p { font-size: 13px; opacity: 0.9; line-height: 1.5; }
+
+        .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 24px; overflow: hidden; }
+
+        .top-section { display: grid; grid-template-columns: 160px 1fr; gap: 24px; align-items: stretch; }
+        .character-display {
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            background: transparent; border-radius: var(--radius-md); padding: 16px 8px; position: relative;
+        }
+        .char-svg { width: 100%; max-height: 200px; color: var(--muted); transition: color 0.4s ease; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); }
+        .body-shape { transform-origin: 50% 50%; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        .form-panel { display: flex; flex-direction: column; justify-content: center; }
+        
+        .profile-badge-bar {
+            display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+        }
+        @media (max-width: 768px) {
+            .profile-badge-bar { justify-content: center; }
+        }
+        .info-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; background: rgba(47, 128, 92, 0.08); color: var(--green);
+            border-radius: var(--radius-sm); font-size: 12px; font-weight: 700;
+        }
+
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .field label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+        .input-wrap { position: relative; }
+        .input-wrap input {
+            width: 100%; height: 48px; padding: 0 42px 0 14px; border: 1px solid var(--line);
+            border-radius: var(--radius-md); background: #fbfcfa; outline: 0; transition: .2s; font-size: 14px; font-weight: 600;
+        }
+        .input-wrap input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(47,128,92,.1); background: white; }
+        .input-wrap .unit { position: absolute; top: 50%; right: 14px; transform: translateY(-50%); font-size: 12px; color: #8b968e; pointer-events: none; font-weight: 600; }
+
+        .btn-submit {
+            width: 100%; height: 50px; border: 0; border-radius: var(--radius-md); background: var(--lime);
+            color: #173b29; font-size: 15px; font-weight: 800; transition: .2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-submit:hover { background: #c9e877; transform: translateY(-1px); }
+
+        /* RESULTS SECTION - CENTERED BIG SCORE WITH UNIT */
+        .result-section { display: none; text-align: center; }
+        .result-top-center { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 20px; }
+        .score-box-title { font-size: 12px; color: var(--muted); font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+        .score-value-wrap { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+        .score-value { font-size: 54px; font-weight: 900; line-height: 1; color: #0f172a; letter-spacing: -1.5px; }
+        .score-unit { font-size: 16px; font-weight: 700; color: #64748b; }
+        
+        .status-badge { margin-top: 12px; padding: 8px 18px; border-radius: 99px; font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; }
+
+        .scale-track { position: relative; height: 12px; border-radius: 10px; background: linear-gradient(90deg, #60a5fa 0 18%, #10b981 18% 48%, #fbbf24 48% 66%, #f87171 66% 100%); margin: 20px 0 10px; }
+        .scale-marker { position: absolute; top: 50%; left: 3%; width: 18px; height: 18px; border: 3px solid white; border-radius: 50%; background: #0f172a; transform: translate(-50%, -50%); transition: left .6s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        .scale-labels { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; font-weight: 700; }
+
+        /* RECOMMENDATIONS GRID CARD (2x2) */
+        .recommendation-card { margin-top: 20px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow); }
+        .rec-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .rec-icon-badge { width: 40px; height: 40px; border-radius: 12px; background: rgba(47, 128, 92, 0.1); color: var(--green); display: grid; place-items: center; font-size: 20px; flex-shrink: 0; }
+        .rec-title-wrap h3 { font-size: 16px; font-weight: 800; color: var(--ink); }
+        .rec-title-wrap p { font-size: 12px; color: var(--muted); }
+        .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 600px) { .rec-grid { grid-template-columns: 1fr; } }
+        .rec-item { background: #f8fafc; border: 1px solid var(--line); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+        .rec-item-title { font-size: 13px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+        .rec-bullet { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+        .rec-item-desc { font-size: 12px; color: #64748b; line-height: 1.5; }
+
+        /* CHART & HISTORY SECTION */
+        .chart-section { margin-top: 20px; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .chart-header h3 { margin: 0; font-size: 15px; font-weight: 800; }
+        .chart-container-scroll { width: 100%; min-width: 0; overflow: hidden; padding-bottom: 8px; }
+        .chart-wrapper { height: clamp(190px, 30vw, 250px); width: 100%; min-width: 0; position: relative; }
+        .chart-wrapper canvas, .chart-wrapper > svg { max-width: 100%; }
+        .empty-chart { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.95); font-size: 13px; color: var(--muted); border-radius: var(--radius-md); }
+
+        .history-section { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .history-title { font-size: 14px; font-weight: 800; }
+        .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+        .history-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 14px; background: #fafbfc; border: 1px solid var(--line); border-radius: var(--radius-md);
+            transition: all .2s;
+        }
+        .history-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .history-main { display: flex; align-items: center; gap: 12px; }
+        .history-score-chip { padding: 6px 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 800; text-align: center; }
+        .history-info { display: flex; flex-direction: column; gap: 2px; }
+        .history-status-txt { font-size: 13px; font-weight: 800; color: var(--ink); }
+        .history-date-txt { font-size: 11px; color: var(--muted); font-weight: 600; }
+        .btn-delete-item {
+            background: transparent; border: 0; color: #ef4444; font-size: 16px; padding: 6px;
+            border-radius: var(--radius-sm); transition: .2s; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-delete-item:hover { background: #fee2e2; }
+
+        /* PRECISE RESPONSIVE BUTTONS */
+        .btn-action-wrap { display: flex; gap: 12px; width: 100%; margin-top: 14px; }
+        .btn-action-wrap > button { flex: 1 1 0%; width: 50%; min-height: 48px; }
+        @media (max-width: 480px) { 
+            .btn-action-wrap { flex-direction: column; } 
+            .btn-action-wrap > button { width: 100%; }
+        }
+
+        /* TASKS VIEW & CHECKLIST */
+        .task-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
+        .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+        .task-list-items { display: flex; flex-direction: column; gap: 10px; }
+        .task-row-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #f8fafc; border: 1px solid var(--line); border-radius: var(--radius-md); transition: .2s; }
+        .task-checkbox { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+        .task-label { font-size: 13px; font-weight: 600; color: var(--ink); flex: 1; }
+        .task-row-item.completed { background: #f1f5f9; text-decoration: line-through; opacity: 0.65; }
+
+        /* PROFILE ENHANCEMENT WITH VERIFIED CHECKMARK NEXT TO NAME */
+        .profile-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow); }
+        .profile-header-wrap { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+        .profile-big-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--lime); color: var(--green-dark); display: grid; place-items: center; font-size: 26px; font-weight: 800; flex-shrink: 0; }
+        .profile-name-badge-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .verified-badge { display: inline-flex; align-items: center; gap: 6px; color: #2563eb; font-weight: 700; font-size: 12px; background: #eff6ff; padding: 4px 10px; border-radius: 99px; }
+        .verified-check { width: 15px; height: 15px; background: #2563eb; color: white; border-radius: 50%; display: inline-grid; place-items: center; font-size: 9px; font-weight: 900; }
+        
+        .profile-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        @media (max-width: 600px) { .profile-info-grid { grid-template-columns: 1fr; } }
+        .profile-field-box { background: #f8fafc; border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px 16px; }
+        .profile-field-box span { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+        .profile-field-box strong { font-size: 14px; color: var(--ink); }
+
+        /* AUTHENTICATION FLOATING LABELS MODAL */
+        .auth-overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(6px); z-index: 100;
+            display: flex; align-items: center; justify-content: center; padding: 16px;
+            transition: opacity 0.25s ease;
+        }
+        .auth-overlay.hidden { display: none; opacity: 0; pointer-events: none; }
+        .auth-card {
+            background: var(--card); border-radius: var(--radius-lg); width: min(420px, 100%);
+            padding: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative;
+        }
+        .auth-card h2 { font-size: 22px; font-weight: 800; color: var(--ink); margin-bottom: 6px; }
+        .auth-card p { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+        
+        /* FLOATING LABEL CONTAINER */
+        .float-group { position: relative; margin-bottom: 16px; width: 100%; }
+        .float-group input, .float-group select {
+            width: 100%; height: 50px; padding: 14px 14px 0; border: 1px solid var(--line);
+            border-radius: var(--radius-md); outline: 0; font-size: 14px; font-weight: 600;
+            background: #f8fafc; transition: all 0.2s ease; color: var(--ink);
+        }
+        .float-group select { padding-top: 14px; }
+        .float-group label {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            font-size: 13px; color: var(--muted); font-weight: 600; pointer-events: none;
+            transition: all 0.2s ease; background: transparent; padding: 0 4px;
+        }
+        .float-group input:focus, .float-group select:focus {
+            border-color: var(--green); background: white; box-shadow: 0 0 0 3px rgba(47,128,92,.1);
+        }
+        .float-group input:focus ~ label,
+        .float-group input:not(:placeholder-shown) ~ label,
+        .float-group select:focus ~ label,
+        .float-group select:valid ~ label {
+            top: 0; left: 10px; transform: translateY(-50%) scale(0.85);
+            background: white; color: var(--green); font-weight: 800;
+        }
+
+        /* PASSWORD SHOW/HIDE TOGGLE */
+        .password-wrap { position: relative; width: 100%; }
+        .password-toggle-btn { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 10; }
+
+        .btn-auth-submit {
+            width: 100%; height: 48px; border-radius: var(--radius-md); background: var(--green);
+            color: white; font-weight: 800; font-size: 14px; margin-top: 6px; transition: .2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-auth-submit:hover { background: var(--green-dark); }
+        .auth-switch { margin-top: 18px; text-align: center; font-size: 13px; color: var(--muted); }
+        .auth-switch a { color: var(--green); font-weight: 700; text-decoration: none; }
+
+        .overlay-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 35; }
+
+        /* TOAST NOTIFICATION */
+        .toast-box {
+            position: fixed; bottom: 20px; right: 20px; z-index: 200;
+            padding: 12px 20px; border-radius: var(--radius-md); background: #1e293b; color: white;
+            font-size: 13px; font-weight: 700; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 10px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease;
+        }
+        .toast-box.active { transform: translateY(0); opacity: 1; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .overlay-backdrop.active { display: block; }
+            .main-content { width: 100%; margin-left: 0; padding: 76px 16px 16px; }
+            .mobile-header {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 30;
+                border-radius: 0;
+                border-width: 0 0 1px;
+                box-shadow: var(--shadow);
+            }
+            .top-section { grid-template-columns: 1fr; gap: 16px; }
+            .character-display { height: 170px; }
+            .char-svg { max-height: 140px; }
+        }
+
+        @media (max-width: 480px) {
+            .main-content { padding-right: 12px; padding-left: 12px; }
+            .card, .recommendation-card, .task-card, .profile-card { padding: 16px; }
+            .input-grid { gap: 8px; }
+            .scale-labels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; text-align: center; }
+            .rec-header { align-items: flex-start; gap: 10px; }
+            .rec-title-wrap h3 { font-size: 15px; }
+            .rec-title-wrap p { line-height: 1.4; }
+            .toast-box { left: 12px; right: 12px; bottom: 12px; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="overlay-backdrop" id="overlayBackdrop" onclick="closeSidebar()"></div>
+        
+        <aside class="sidebar" id="appSidebar">
+            <div>
+                <div class="brand">
+                    <span class="brand-text">body<span>fit</span></span>
+                </div>
+                <ul class="nav-list">
+                    <li class="nav-item active" id="navCalc" onclick="switchNav('calculator')">
+                        <i class="ph-bold ph-calculator"></i> Kalkulator & Grafik
+                    </li>
+                    <li class="nav-item" id="navTasks" onclick="switchNav('tasks')">
+                        <i class="ph-bold ph-check-square"></i> Task Saya
+                    </li>
+                    <li class="nav-item" id="navProfile" onclick="switchNav('profile')">
+                        <i class="ph-bold ph-user-circle"></i> Profil Saya
+                    </li>
+                </ul>
+            </div>
+
+            <div class="user-block">
+                <div class="user-info">
+                    <div class="user-avatar" id="avatarLetter">B</div>
+                    <div class="user-details">
+                        <span class="user-name" id="userNameText">Pengguna</span>
+                        <span class="user-status" id="userEmailText">Tersambung Online</span>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">
+                    <i class="ph-bold ph-sign-out"></i> Keluar
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="mobile-header">
+                <div class="brand" style="font-size: 16px; padding:0; border:0;">
+                    <span class="brand-text">body<span>fit</span></span>
+                </div>
+                <button class="btn-menu" onclick="openSidebar()"><i class="ph-bold ph-list"></i></button>
+            </header>
+
+            <!-- WELCOME HEADER BANNER (VISIBLE ONLY ON CALCULATOR VIEW) -->
+            <section class="welcome-card" id="welcomeCardHeader">
+                <h1 id="welcomeGreeting">Selamat datang!</h1>
+                <p>Pantau Indeks Massa Tubuh (BMI) Anda secara berkala untuk menjaga kualitas kesehatan dan pola hidup seimbang bersama bodyfit.</p>
+            </section>
+
+            <!-- CALCULATOR & CHART VIEW (SINGLE INTEGRATED PAGE) -->
+            <div id="calculatorView">
+                <div class="card top-section">
+                    <div class="character-display">
+                        <!-- Male SVG -->
+                        <svg id="svgMale" class="char-svg" viewBox="0 0 100 200" style="display: block;">
+                            <circle cx="50" cy="20" r="14" fill="currentColor"/>
+                            <path class="body-shape" d="M 28 45 Q 50 35 72 45 L 78 95 Q 75 120 70 200 L 30 200 Q 25 120 22 95 Z" fill="currentColor"/>
+                        </svg>
+                        
+                        <!-- Female SVG -->
+                        <svg id="svgFemale" class="char-svg" viewBox="0 0 100 200" style="display: none;">
+                            <circle cx="50" cy="20" r="13" fill="currentColor"/>
+                            <path class="body-shape" d="M 32 45 Q 50 38 68 45 L 65 85 Q 82 130 75 200 L 25 200 Q 18 130 35 85 Z" fill="currentColor"/>
+                        </svg>
+                    </div>
+
+                    <form id="bmiForm" class="form-panel">
+                        <div class="profile-badge-bar">
+                            <div class="info-pill" id="pillGender"><i class="ph-bold ph-user"></i> Pria</div>
+                            <div class="info-pill" id="pillAge"><i class="ph-bold ph-calendar-blank"></i> 25 Tahun</div>
+                        </div>
+
+                        <div class="input-grid">
+                            <div class="field">
+                                <label>Berat Badan</label>
+                                <div class="input-wrap">
+                                    <input type="number" id="weight" min="20" max="300" step="0.1" placeholder="65" required>
+                                    <span class="unit">kg</span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label>Tinggi Badan</label>
+                                <div class="input-wrap">
+                                    <input type="number" id="height" min="100" max="250" step="0.1" placeholder="170" required>
+                                    <span class="unit">cm</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-submit">Hitung BMI & Simpan</button>
+                    </form>
+                </div>
+
+                <!-- RESULTS SECTION - CENTERED BIG SCORE WITH UNIT -->
+                <section class="card result-section" id="resultSection" style="margin-top: 20px;">
+                    <div class="result-top-center">
+                        <span class="score-box-title">Skor Indeks Massa Tubuh</span>
+                        <div class="score-value-wrap">
+                            <div class="score-value" id="bmiScore">0.0</div>
+                            <span class="score-unit">kg/m²</span>
+                        </div>
+                        <div class="status-badge" id="bmiBadge" style="background: #e2e8f0; color: #475569;">
+                            <i class="ph-bold ph-check-circle"></i> <span id="badgeText">Status BMI</span>
+                        </div>
+                    </div>
+
+                    <div class="scale-track">
+                        <div class="scale-marker" id="scaleMarker"></div>
+                    </div>
+                    <div class="scale-labels">
+                        <span>Kurus (&lt;18.5)</span>
+                        <span>Ideal (18.5-24.9)</span>
+                        <span>Berlebih (25-29.9)</span>
+                        <span>Obesitas (&ge;30)</span>
+                    </div>
+                </section>
+
+                <!-- RECOMMENDATIONS SECTION MATCHING REFERENCE SCREENSHOT 2x2 GRID -->
+                <section class="recommendation-card" id="recommendationCard" style="display: none;">
+                    <div class="rec-header">
+                        <div class="rec-icon-badge">
+                            <i class="ph-fill ph-barbell"></i>
+                        </div>
+                        <div class="rec-title-wrap">
+                            <h3>Rekomendasi Fit</h3>
+                            <p>Panduan klinis harian terprogram sesuai kategori BMI Anda</p>
+                        </div>
+                    </div>
+
+                    <div class="rec-grid" id="recGrid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </section>
+
+                <!-- INTEGRATED CHART & HISTORY SECTION -->
+                <section class="card chart-section">
+                    <div class="chart-header">
+                        <h3>Grafik Perkembangan BMI (5 Data Terbaru)</h3>
+                    </div>
+                    
+                    <div class="chart-container-scroll">
+                        <div class="chart-wrapper">
+                            <canvas id="historyChart"></canvas>
+                            <div class="empty-chart" id="emptyChart">Belum ada data riwayat tersimpan.</div>
+                        </div>
+                    </div>
+
+                    <div class="history-section">
+                        <div class="history-header">
+                            <span class="history-title">Riwayat Perhitungan Terkini</span>
+                        </div>
+                        <div class="history-list" id="historyList">
+                            <!-- Items dynamically populated -->
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- TASKS VIEW -->
+            <div id="tasksView" style="display: none;">
+                <section class="task-card">
+                    <div class="task-header">
+                        <div>
+                            <h3 style="font-size:16px; font-weight:800;" id="activeTaskTitle">Task Aktif Hari Ini</h3>
+                            <p style="font-size:12px; color:var(--muted);" id="activeTaskSubtitle">Selesaikan checklist tantangan harian Anda</p>
+                        </div>
+                        <span class="info-pill" id="activeTaskCategoryBadge">Task Fit</span>
+                    </div>
+
+                    <div class="task-list-items" id="taskListContainer">
+                        <p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada task aktif. Hitung BMI Anda di tab Kalkulator untuk menerima task tantangan 1 hari.</p>
+                    </div>
+
+                    <div id="taskActionFooter" style="display: none; margin-top: 20px;">
+                        <button type="button" class="btn-auth-submit" onclick="openConfirmTaskSaveModal()">
+                            <i class="ph-bold ph-floppy-disk"></i> Kumpulkan Task / Simpan Permanen
+                        </button>
+                    </div>
+                </section>
+
+                <section class="task-card">
+                    <h3 style="font-size:15px; font-weight:800; margin-bottom:14px;">Riwayat Task Tersimpan</h3>
+                    <div class="history-list" id="savedTaskHistoryList">
+                        <p style="font-size:13px; color:var(--muted); text-align:center; padding:10px;">Belum ada riwayat task permanen.</p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- PROFILE VIEW ENHANCED WITH VERIFIED BADGE NEXT TO NAME -->
+            <div id="profileView" style="display: none;">
+                <section class="profile-card">
+                    <div class="profile-header-wrap">
+                        <div class="profile-big-avatar" id="profAvatarBig">B</div>
+                        <div class="profile-details-column">
+                            <div class="profile-name-badge-row">
+                                <h2 style="font-size:20px; font-weight:800;" id="profNameTitle">Nama Pengguna</h2>
+                                <div class="verified-badge">
+                                    Pengguna Terverifikasi <span class="verified-check">✓</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-info-grid">
+                        <div class="profile-field-box">
+                            <span>Jenis Kelamin</span>
+                            <strong id="profGenderTxt">Pria</strong>
+                        </div>
+                        <div class="profile-field-box">
+                            <span>Tanggal Lahir</span>
+                            <strong id="profBirthTxt">-</strong>
+                        </div>
+                        <div class="profile-field-box">
+                            <span>Usia</span>
+                            <strong id="profAgeTxt">25 Tahun</strong>
+                        </div>
+                        <div class="profile-field-box">
+                            <span>Alamat Email</span>
+                            <strong id="profEmailTxt">-</strong>
+                        </div>
+                    </div>
+
+                    <button class="btn-submit" style="background:#e2e8f0; color:#334155;" onclick="openEditProfileModal()">
+                        <i class="ph-bold ph-pencil-simple"></i> Edit Informasi Profil
+                    </button>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- TASK POP-UP MODAL (AFTER BMI CALCULATION) -->
+    <div class="auth-overlay hidden" id="taskPopUpModal">
+        <div class="auth-card" style="width: min(480px, 100%);">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                <div style="width:36px; height:36px; border-radius:10px; background:rgba(47,128,92,0.1); color:var(--green); display:grid; place-items:center; font-size:18px;">
+                    <i class="ph-bold ph-target"></i>
+                </div>
+                <div>
+                    <h3 style="font-size:16px; font-weight:800;" id="popCategoryLabel">Tantangan Task 1 Hari</h3>
+                    <p style="font-size:11px; color:var(--muted);">Terprogram sesuai kategori BMI Anda</p>
+                </div>
+            </div>
+
+            <div style="background:#f8fafc; border:1px solid var(--line); border-radius:var(--radius-md); padding:12px 16px; margin-bottom:14px;">
+                <div style="font-size:12px; color:var(--muted); font-weight:700;">HASIL HITUNG BMI</div>
+                <div style="font-size:24px; font-weight:900; color:var(--green);" id="popBmiScore">22.5 kg/m²</div>
+                <p style="font-size:12px; color:#475569; margin-top:4px;" id="popCategorySummary">Summary penjelasan</p>
+            </div>
+
+            <p style="font-size:12px; font-weight:700; color:#1e293b; margin-bottom:8px;">Tantangan Task 1 Hari untuk Anda:</p>
+            <ul id="popTaskList" style="list-style:none; display:flex; flex-direction:column; gap:6px; margin-bottom:16px; max-height:160px; overflow-y:auto; font-size:12px; color:#334155;">
+                <!-- Dynamically populated -->
+            </ul>
+
+            <p style="font-size:12px; font-weight:700; text-align:center; color:#64748b; margin-bottom:14px;">Apakah Anda bersedia menerima dan menjalankan task 1 hari ini?</p>
+
+            <div class="btn-action-wrap">
+                <button type="button" class="btn-logout" style="background:#f1f5f9; color:#64748b; margin:0;" onclick="closeTaskPopUpModal(false)">Tolak</button>
+                <button type="button" class="btn-auth-submit" style="margin:0;" onclick="closeTaskPopUpModal(true)">Terima Task 1 Hari</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRMATION MODAL FOR PERMANENT TASK SUBMISSION -->
+    <div class="auth-overlay hidden" id="confirmTaskSaveModal">
+        <div class="auth-card">
+            <h2 style="color:#1e293b; font-size:18px;">Konfirmasi Pengumpulkan Task</h2>
+            <p style="margin-bottom:20px;">Apakah Anda yakin mengumpulkan task ini? Data yang sudah dikumpulkan akan tersimpan permanen di cloud dan tidak dapat diedit lagi.</p>
+            <div class="btn-action-wrap">
+                <button type="button" class="btn-logout" style="background:#e2e8f0; color:#475569; margin:0;" onclick="closeConfirmTaskSaveModal()">Batal</button>
+                <button type="button" class="btn-auth-submit" style="margin:0;" onclick="submitActiveTaskPermanently()">Ya, Kumpulkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTHENTICATION FLOATING LABEL MODAL WITH EYE TOGGLE -->
+    <div class="auth-overlay" id="authModal">
+        <div class="auth-card">
+            <h2 id="authTitle">Masuk ke bodyfit</h2>
+            <p id="authSubtitle">Silakan masuk untuk menyimpan riwayat BMI dan task olahraga online.</p>
+            
+            <form class="auth-form" id="authForm">
+                <div id="registerFields" style="display: none; flex-direction: column; gap: 16px;">
+                    <div class="float-group">
+                        <input type="text" id="authName" placeholder=" " autocomplete="off">
+                        <label for="authName">Nama Lengkap</label>
+                    </div>
+                    
+                    <div class="float-group">
+                        <select id="authGender" required>
+                            <option value="pria" selected>Pria</option>
+                            <option value="wanita">Wanita</option>
+                        </select>
+                        <label for="authGender">Jenis Kelamin</label>
+                    </div>
+
+                    <div class="float-group">
+                        <input type="date" id="authBirthDate" placeholder=" " required>
+                        <label for="authBirthDate">Tanggal Lahir</label>
+                    </div>
+                </div>
+
+                <div class="float-group">
+                    <input type="email" id="authEmail" placeholder=" " required autocomplete="off">
+                    <label for="authEmail">Alamat Email</label>
+                </div>
+
+                <div class="float-group password-wrap">
+                    <input type="password" id="authPassword" placeholder=" " required>
+                    <label for="authPassword">Kata Sandi</label>
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('authPassword', this)">
+                        <i class="ph-bold ph-eye"></i>
+                    </button>
+                </div>
+
+                <button type="submit" class="btn-auth-submit" id="btnAuthSubmit">Masuk</button>
+            </form>
+
+            <div class="auth-switch">
+                <span id="authSwitchText">Belum punya akun?</span>
+                <a href="#" onclick="toggleAuthMode(event)" id="authSwitchLink">Daftar sekarang</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL -->
+    <div class="auth-overlay hidden" id="editProfileModal">
+        <div class="auth-card">
+            <h2>Edit Profil Pengguna</h2>
+            <p>Perbarui informasi pribadi Anda.</p>
+            
+            <form class="auth-form" id="editProfileForm">
+                <div class="float-group">
+                    <input type="text" id="editName" placeholder=" " required>
+                    <label for="editName">Nama Lengkap</label>
+                </div>
+
+                <div class="float-group">
+                    <select id="editGender" required>
+                        <option value="pria">Pria</option>
+                        <option value="wanita">Wanita</option>
+                    </select>
+                    <label for="editGender">Jenis Kelamin</label>
+                </div>
+
+                <div class="float-group">
+                    <input type="date" id="editBirthDate" placeholder=" " required>
+                    <label for="editBirthDate">Tanggal Lahir</label>
+                </div>
+
+                <div class="btn-action-wrap">
+                    <button type="button" class="btn-logout" style="background:#e2e8f0; color:#475569; margin:0;" onclick="closeEditProfileModal()">Batal</button>
+                    <button type="submit" class="btn-auth-submit" style="margin:0;">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-box" id="toastBox">
+        <i class="ph-bold ph-info" id="toastIcon"></i>
+        <span id="toastMsg">Pesan Notifikasi</span>
+    </div>
+
+    <!-- FIREBASE SDK MODULES & CORE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged, 
+            updateProfile 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            collection, 
+            addDoc, 
+            deleteDoc, 
+            getDocs, 
+            query, 
+            where, 
+            onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'bodyfit-bmi-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyBL68Qo8hkvmSrVLwCeXBgr9es1CsXSg20",
+            authDomain: "kalkulator-bmi-bima.firebaseapp.com",
+            projectId: "kalkulator-bmi-bima",
+            storageBucket: "kalkulator-bmi-bima.firebasestorage.app",
+            messagingSenderId: "612727586787",
+            appId: "1:612727586787:web:cd2732362d722c32376ad6"
+        };
+
+        // INTEGRATION CHECK LOGGER
+        console.log("%c 🟢 [bodyfit System Check] %c Memulai verifikasi integrasi...", "background: #2f805c; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px;", "color: #2f805c; font-weight: bold;");
+
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            console.log("✅ Firebase Core App & Services Terinisialisasi.");
+        } catch(err) {
+            console.error("❌ Firebase Init Error:", err.message);
+        }
+
+        let currentUser = null;
+        let unsubscribeHistoryListener = null;
+        let unsubscribeTasksListener = null;
+        let isRegisterMode = false;
+        let chartInstance = null;
+        let pendingTaskObj = null;
+        let userProfileData = { gender: 'pria', birthDate: '', age: 25 };
+
+        // PASSWORD VISIBILITY TOGGLE FUNCTION
+        window.togglePasswordVisibility = function(inputId, btnEl) {
+            const input = document.getElementById(inputId);
+            const icon = btnEl.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'ph-bold ph-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'ph-bold ph-eye';
+            }
+        };
+
+        // ENHANCED TASK DATA WITH MORE EXERCISE TASKS
+        function getCategoryData(bmi) {
+            if (bmi < 18.5) return { 
+                label: 'Sangat Kurus', color: '#60a5fa', bgColor: '#eff6ff', textColor: '#2563eb', scale: 0.75,
+                summary: 'Indeks massa tubuh rendah. Jalankan 5 task ringan hari ini untuk asupan nutrisi & pembentukan otot harian.',
+                recs: [
+                    { title: 'Latihan Beban Tubuh Ringan', desc: 'Lakukan gerakan dasar beban tubuh untuk merangsang pertumbuhan massa otot.' },
+                    { title: 'Asupan Protein Ekstra', desc: 'Konsumsi telur rebus, dada ayam, atau susu utuh untuk mendukung nutrisi harian.' },
+                    { title: 'Jalan Santai Pagi', desc: 'Jalan santai durasi singkat untuk memicu kebugaran dan nafsu makan.' },
+                    { title: 'Istirahat Cukup Malam Ini', desc: 'Utamakan tidur teratur minimal 7.5 jam untuk pemulihan fisik alami.' }
+                ],
+                tasks: [
+                    'Jalan santai pagi 15-20 menit hari ini',
+                    'Push-up / Knee Push-up 2 set x 10 kali',
+                    'Bodyweight Squat 2 set x 12 kali',
+                    'Minum 2 gelas susu atau makan 2 butir telur rebus hari ini',
+                    'Lakukan stretching seluruh tubuh selama 8 menit'
+                ]
+            };
+            if (bmi < 25) return { 
+                label: 'Berat Ideal', color: '#10b981', bgColor: '#ecfdf5', textColor: '#059669', scale: 1.0,
+                summary: 'Tubuh Anda dalam kondisi sangat ideal! Pertahankan kebugaran dengan 5 tantangan harian seimbang.',
+                recs: [
+                    { title: 'Olahraga Aerobik Teratur', desc: 'Lakukan jalan cepat atau jogging santai selama 20-25 menit hari ini.' },
+                    { title: 'Gizi Seimbang 1 Hari', desc: 'Penuhi porsi makan dengan kombinasi sayur, buah, dan protein tanpa lemak.' },
+                    { title: 'Peregangan Pagi / Sore', desc: 'Lakukan peregangan tubuh 10 menit untuk kelenturan otot harian.' },
+                    { title: 'Hidrasi Cukup Harian', desc: 'Minum minimal 2.5 liter air putih sepanjang hari ini.' }
+                ],
+                tasks: [
+                    'Jogging / Jalan cepat santai 25 menit hari ini',
+                    'Jumping Jacks 3 set x 15 kali',
+                    'Plank tahan selama 45 detik',
+                    'Peregangan fleksibilitas seluruh tubuh 10 menit',
+                    'Cukupi konsumsi air putih minimal 2.5 Liter'
+                ]
+            };
+            if (bmi < 30) return { 
+                label: 'Kelebihan Berat', color: '#fbbf24', bgColor: '#fef3c7', textColor: '#d97706', scale: 1.25,
+                summary: 'Terdeteksi kelebihan berat badan. Lakukan 5 task harian terukur untuk membakar kalori aktif.',
+                recs: [
+                    { title: 'Jalan Kaki Aktif Harian', desc: 'Targetkan jalan kaki 30 menit untuk meningkatkan pembakaran kalori harian.' },
+                    { title: 'Latihan Inti & Stabilitas', desc: 'Lakukan gerakan plank dan wall-sit untuk melatih otot perut dan paha.' },
+                    { title: 'Bebas Minuman Manis 1 Hari', desc: 'Ganti seluruh minuman manis dengan air putih atau teh tanpa gula.' },
+                    { title: 'Gunakan Piring Lebih Kecil', desc: 'Atur porsi makan siang dan malam dengan piring lebih ringkas.' }
+                ],
+                tasks: [
+                    'Jalan kaki aktif 30 menit tanpa henti hari ini',
+                    'Plank stabil 2 set x 35 detik',
+                    'Wall Sit tahan 2 set x 30 detik',
+                    'Jalan naik-turun tangga 5 menit santai',
+                    'Bebas dari minuman berkalori manis sepanjang hari'
+                ]
+            };
+            return { 
+                label: 'Obesitas', color: '#f87171', bgColor: '#fef2f2', textColor: '#dc2626', scale: 1.6,
+                summary: 'Kategori obesitas terdeteksi. Utamakan olahraga ringan (low-impact) aman untuk persendian.',
+                recs: [
+                    { title: 'Jalan Santai Lintasan Datar', desc: 'Lakukan jalan santai di permukaan rata selama 20 menit hari ini.' },
+                    { title: 'Peregangan Sendi & Pernapasan', desc: 'Lakukan peregangan halus dan latihan pernapasan untuk kebugaran.' },
+                    { title: 'Tambah Porsi Sayur Kukus', desc: 'Konsumsi sayur kukus pada waktu makan siang atau malam hari ini.' },
+                    { title: 'Hindari Camilan Jam Malam', desc: 'Hentikan makan cemilan berat di atas jam 8 malam ini.' }
+                ],
+                tasks: [
+                    'Jalan santai ringan di permukaan rata 20 menit',
+                    'Duduk-berdiri dari kursi (Chair Squats) 2 set x 10 kali',
+                    'Latihan pernapasan & peregangan halus 10 menit',
+                    'Putar sendi tangan dan kaki 5 menit untuk kelenturan',
+                    'Konsumsi porsi ekstra sayur kukus & hindari camilan malam'
+                ]
+            };
+        }
+
+        function calculateAgeFromBirthdate(birthDateString) {
+            if (!birthDateString) return 25;
+            const birth = new Date(birthDateString);
+            const now = new Date();
+            let age = now.getFullYear() - birth.getFullYear();
+            const monthDiff = now.getMonth() - birth.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) {
+                age--;
+            }
+            return age >= 0 ? age : 0;
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toastBox');
+            document.getElementById('toastMsg').textContent = msg;
+            document.getElementById('toastIcon').className = isError ? 'ph-bold ph-warning-circle' : 'ph-bold ph-check-circle';
+            toast.style.background = isError ? '#ef4444' : '#1e293b';
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 3500);
+        }
+
+        // AUTO-DISPLAY LATEST BMI RECORD UPON LOGIN
+        async function displayLatestBmiData(userId) {
+            try {
+                const colRef = collection(db, 'artifacts', appId, 'users', userId, 'history');
+                const q = query(colRef);
+                const snapshot = await getDocs(q);
+                let records = [];
+                snapshot.forEach(doc => records.push(doc.data()));
+                
+                if (records.length > 0) {
+                    records.sort((a, b) => b.timestamp - a.timestamp);
+                    const latest = records[0];
+                    const data = getCategoryData(latest.bmi);
+
+                    // Display Score Box
+                    document.getElementById('resultSection').style.display = 'block';
+                    document.getElementById('bmiScore').textContent = latest.bmi;
+                    
+                    const badge = document.getElementById('bmiBadge');
+                    badge.style.backgroundColor = data.bgColor;
+                    badge.style.color = data.textColor;
+                    document.getElementById('badgeText').textContent = data.label;
+
+                    // Marker Position
+                    const markerPos = Math.max(2, Math.min(98, ((latest.bmi - 14) / 22) * 100));
+                    document.getElementById('scaleMarker').style.left = `${markerPos}%`;
+
+                    // Recommendations Grid
+                    const recCard = document.getElementById('recommendationCard');
+                    recCard.style.display = 'block';
+                    document.getElementById('recGrid').innerHTML = data.recs.map(r => `
+                        <div class="rec-item">
+                            <div class="rec-item-title">
+                                <span class="rec-bullet" style="background:${data.color}"></span> ${r.title}
+                            </div>
+                            <div class="rec-item-desc">${r.desc}</div>
+                        </div>
+                    `).join('');
+
+                    // Silhouette Scale
+                    const activeSvg = document.getElementById(userProfileData.gender === 'wanita' ? 'svgFemale' : 'svgMale');
+                    if (activeSvg) {
+                        activeSvg.style.color = data.textColor;
+                        activeSvg.querySelector('.body-shape').style.transform = `scaleX(${data.scale})`;
+                    }
+                }
+            } catch(e) {
+                console.warn("Belum ada data terbaru untuk dimuat otomatis.");
+            }
+        }
+
+        // INITIALIZE AUTH STATE
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('authModal').classList.add('hidden');
+                
+                let displayName = user.displayName || 'Pengguna';
+                try {
+                    const profSnap = await getDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info'));
+                    if (profSnap.exists()) {
+                        const data = profSnap.data();
+                        displayName = data.fullName || displayName;
+                        userProfileData.gender = data.gender || 'pria';
+                        userProfileData.birthDate = data.birthDate || '';
+                        userProfileData.age = data.birthDate ? calculateAgeFromBirthdate(data.birthDate) : (data.age || 25);
+                    }
+                } catch(e) {
+                    console.warn("Membaca data profil default.");
+                }
+
+                updateProfileUI(displayName, user.email);
+                subscribeHistory(user.uid);
+                subscribeSavedTasks(user.uid);
+                displayLatestBmiData(user.uid);
+            } else {
+                currentUser = null;
+                document.getElementById('authModal').classList.remove('hidden');
+            }
+        });
+
+        function updateProfileUI(name, email) {
+            document.getElementById('welcomeGreeting').textContent = `Halo, ${name}! 👋`;
+            document.getElementById('userNameText').textContent = name;
+            document.getElementById('userEmailText').textContent = email || 'Tersambung Online';
+            document.getElementById('avatarLetter').textContent = name.charAt(0).toUpperCase();
+
+            document.getElementById('pillGender').innerHTML = `<i class="ph-bold ph-user"></i> ${userProfileData.gender === 'wanita' ? 'Wanita' : 'Pria'}`;
+            document.getElementById('pillAge').innerHTML = `<i class="ph-bold ph-calendar-blank"></i> ${userProfileData.age} Tahun`;
+
+            document.getElementById('profNameTitle').textContent = name;
+            document.getElementById('profAvatarBig').textContent = name.charAt(0).toUpperCase();
+            document.getElementById('profGenderTxt').textContent = userProfileData.gender === 'wanita' ? 'Wanita' : 'Pria';
+            document.getElementById('profBirthTxt').textContent = userProfileData.birthDate || 'Belum Diatur';
+            document.getElementById('profAgeTxt').textContent = `${userProfileData.age} Tahun`;
+            document.getElementById('profEmailTxt').textContent = email || '-';
+
+            const svgMale = document.getElementById('svgMale');
+            const svgFemale = document.getElementById('svgFemale');
+            if (userProfileData.gender === 'wanita') {
+                svgMale.style.display = 'none';
+                svgFemale.style.display = 'block';
+            } else {
+                svgMale.style.display = 'block';
+                svgFemale.style.display = 'none';
+            }
+        }
+
+        // AUTHENTICATION LOGIC
+        window.toggleAuthMode = function(e) {
+            e.preventDefault();
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('authTitle').textContent = isRegisterMode ? 'Buat Akun bodyfit' : 'Masuk ke bodyfit';
+            document.getElementById('authSubtitle').textContent = isRegisterMode ? 'Daftar untuk memantau BMI dan task olahraga harian.' : 'Silakan masuk untuk menyimpan riwayat BMI dan task olahraga online.';
+            document.getElementById('registerFields').style.display = isRegisterMode ? 'flex' : 'none';
+            document.getElementById('btnAuthSubmit').textContent = isRegisterMode ? 'Daftar Sekarang' : 'Masuk';
+            document.getElementById('authSwitchText').textContent = isRegisterMode ? 'Sudah punya akun?' : 'Belum punya akun?';
+            document.getElementById('authSwitchLink').textContent = isRegisterMode ? 'Masuk di sini' : 'Daftar sekarang';
+        };
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+
+            try {
+                if (isRegisterMode) {
+                    const name = document.getElementById('authName').value;
+                    const gender = document.getElementById('authGender').value;
+                    const birthDate = document.getElementById('authBirthDate').value;
+
+                    if (!name.trim() || !birthDate) { 
+                        showToast("Lengkapi nama dan tanggal lahir Anda.", true); 
+                        return; 
+                    }
+
+                    const age = calculateAgeFromBirthdate(birthDate);
+                    const res = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(res.user, { displayName: name });
+                    
+                    await setDoc(doc(db, 'artifacts', appId, 'users', res.user.uid, 'profile', 'info'), {
+                        fullName: name,
+                        gender: gender,
+                        birthDate: birthDate,
+                        age: age,
+                        email: email,
+                        createdAt: new Date().toISOString()
+                    });
+
+                    userProfileData = { gender, birthDate, age };
+                    showToast("Akun berhasil terdaftar!");
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showToast("Berhasil masuk!");
+                }
+                document.getElementById('authModal').classList.add('hidden');
+            } catch (err) {
+                let errorMsg = "Gagal autentikasi: " + err.message;
+                if (err.code === 'auth/invalid-credential') errorMsg = "Email atau kata sandi tidak cocok.";
+                if (err.code === 'auth/email-already-in-use') errorMsg = "Email ini sudah terdaftar.";
+                showToast(errorMsg, true);
+            }
+        });
+
+        // LOGOUT LOGIC
+        window.handleLogout = async function() {
+            try {
+                if (unsubscribeHistoryListener) { unsubscribeHistoryListener(); unsubscribeHistoryListener = null; }
+                if (unsubscribeTasksListener) { unsubscribeTasksListener(); unsubscribeTasksListener = null; }
+
+                await signOut(auth);
+                currentUser = null;
+
+                // Reset Forms & Views
+                document.getElementById('weight').value = '';
+                document.getElementById('height').value = '';
+                document.getElementById('resultSection').style.display = 'none';
+                document.getElementById('recommendationCard').style.display = 'none';
+                document.getElementById('taskListContainer').innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada task aktif. Hitung BMI Anda di tab Kalkulator untuk menerima task tantangan 1 hari.</p>';
+                document.getElementById('taskActionFooter').style.display = 'none';
+                
+                if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+                switchNav('calculator');
+                document.getElementById('authModal').classList.remove('hidden');
+                showToast("Anda telah keluar.");
+            } catch(e) {
+                showToast("Gagal logout: " + e.message, true);
+            }
+        };
+
+        // CALCULATOR CALCULATION & TASK POPUP TRIGGER
+        document.getElementById('bmiForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const weight = parseFloat(document.getElementById('weight').value);
+            const heightCm = parseFloat(document.getElementById('height').value);
+            const heightM = heightCm / 100;
+            
+            const bmi = parseFloat((weight / (heightM * heightM)).toFixed(1));
+            const data = getCategoryData(bmi);
+
+            // Render Results Box
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('bmiScore').textContent = bmi;
+            const badge = document.getElementById('bmiBadge');
+            badge.style.backgroundColor = data.bgColor;
+            badge.style.color = data.textColor;
+            document.getElementById('badgeText').textContent = data.label;
+
+            const markerPos = Math.max(2, Math.min(98, ((bmi - 14) / 22) * 100));
+            document.getElementById('scaleMarker').style.left = `${markerPos}%`;
+
+            // Render Recommendations Grid
+            const recCard = document.getElementById('recommendationCard');
+            recCard.style.display = 'block';
+            document.getElementById('recGrid').innerHTML = data.recs.map(r => `
+                <div class="rec-item">
+                    <div class="rec-item-title">
+                        <span class="rec-bullet" style="background:${data.color}"></span> ${r.title}
+                    </div>
+                    <div class="rec-item-desc">${r.desc}</div>
+                </div>
+            `).join('');
+
+            // Scale Silhouette
+            const activeSvg = document.getElementById(userProfileData.gender === 'wanita' ? 'svgFemale' : 'svgMale');
+            if (activeSvg) {
+                activeSvg.style.color = data.textColor;
+                activeSvg.querySelector('.body-shape').style.transform = `scaleX(${data.scale})`;
+            }
+
+            const now = new Date();
+            const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+            const dateStr = `${String(now.getDate()).padStart(2, '0')} ${months[now.getMonth()]}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const timestamp = now.getTime();
+
+            try {
+                const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'history');
+                await addDoc(colRef, {
+                    bmi: bmi,
+                    weight: weight,
+                    status: data.label,
+                    color: data.color,
+                    dateStr: dateStr,
+                    timestamp: timestamp
+                });
+
+                pendingTaskObj = {
+                    bmi: bmi,
+                    category: data.label,
+                    color: data.color,
+                    textColor: data.textColor,
+                    bgColor: data.bgColor,
+                    summary: data.summary,
+                    tasks: data.tasks.map(t => ({ title: t, done: false })),
+                    timestamp: timestamp,
+                    dateStr: dateStr
+                };
+
+                triggerTaskPopUpModal(pendingTaskObj);
+            } catch(err) {
+                showToast("Gagal menyimpan riwayat: " + err.message, true);
+            }
+        });
+
+        function triggerTaskPopUpModal(taskObj) {
+            document.getElementById('popCategoryLabel').textContent = `Tantangan Task Fit (${taskObj.category})`;
+            document.getElementById('popBmiScore').textContent = `${taskObj.bmi} kg/m²`;
+            document.getElementById('popCategorySummary').textContent = taskObj.summary;
+
+            document.getElementById('popTaskList').innerHTML = taskObj.tasks.map(t => `
+                <li style="display:flex; align-items:center; gap:8px;">
+                    <i class="ph-bold ph-check-circle" style="color:${taskObj.textColor}"></i> ${t.title}
+                </li>
+            `).join('');
+
+            document.getElementById('taskPopUpModal').classList.remove('hidden');
+        }
+
+        window.closeTaskPopUpModal = function(accepted) {
+            document.getElementById('taskPopUpModal').classList.add('hidden');
+            if (accepted && pendingTaskObj) {
+                renderActiveTasks(pendingTaskObj);
+                switchNav('tasks');
+                showToast("Task 1 Hari diterima! Selesaikan checklist Anda.");
+            } else {
+                showToast("Task ditolak.");
+            }
+        };
+
+        function renderActiveTasks(taskObj) {
+            document.getElementById('activeTaskCategoryBadge').textContent = taskObj.category;
+            document.getElementById('activeTaskCategoryBadge').style.backgroundColor = taskObj.bgColor;
+            document.getElementById('activeTaskCategoryBadge').style.color = taskObj.textColor;
+
+            const container = document.getElementById('taskListContainer');
+            container.innerHTML = taskObj.tasks.map((t, idx) => `
+                <div class="task-row-item ${t.done ? 'completed' : ''}" id="taskRow_${idx}">
+                    <input type="checkbox" class="task-checkbox" ${t.done ? 'checked' : ''} onchange="toggleTaskDone(${idx})">
+                    <span class="task-label">${t.title}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('taskActionFooter').style.display = 'block';
+        }
+
+        window.toggleTaskDone = function(idx) {
+            if (!pendingTaskObj) return;
+            pendingTaskObj.tasks[idx].done = !pendingTaskObj.tasks[idx].done;
+            const row = document.getElementById(`taskRow_${idx}`);
+            if (pendingTaskObj.tasks[idx].done) {
+                row.classList.add('completed');
+            } else {
+                row.classList.remove('completed');
+            }
+        };
+
+        window.openConfirmTaskSaveModal = function() {
+            document.getElementById('confirmTaskSaveModal').classList.remove('hidden');
+        };
+
+        window.closeConfirmTaskSaveModal = function() {
+            document.getElementById('confirmTaskSaveModal').classList.add('hidden');
+        };
+
+        window.submitActiveTaskPermanently = async function() {
+            if (!currentUser || !pendingTaskObj) return;
+
+            try {
+                const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'tasks');
+                await addDoc(colRef, {
+                    category: pendingTaskObj.category,
+                    bmi: pendingTaskObj.bmi,
+                    color: pendingTaskObj.color,
+                    textColor: pendingTaskObj.textColor,
+                    bgColor: pendingTaskObj.bgColor,
+                    tasks: pendingTaskObj.tasks,
+                    dateStr: pendingTaskObj.dateStr,
+                    timestamp: pendingTaskObj.timestamp
+                });
+
+                closeConfirmTaskSaveModal();
+                pendingTaskObj = null;
+
+                document.getElementById('taskListContainer').innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Task aktif telah dikumpulkan dan tersimpan secara permanen!</p>';
+                document.getElementById('taskActionFooter').style.display = 'none';
+
+                showToast("Task berhasil dikumpulkan dan tersimpan permanen!");
+            } catch(e) {
+                showToast("Gagal menyimpan task: " + e.message, true);
+            }
+        };
+
+        function subscribeSavedTasks(userId) {
+            const colRef = collection(db, 'artifacts', appId, 'users', userId, 'tasks');
+            unsubscribeTasksListener = onSnapshot(colRef, (snapshot) => {
+                let list = [];
+                snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+                list.sort((a, b) => b.timestamp - a.timestamp);
+                
+                const container = document.getElementById('savedTaskHistoryList');
+                if (list.length === 0) {
+                    container.innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:10px;">Belum ada riwayat task permanen.</p>';
+                    return;
+                }
+
+                container.innerHTML = list.map(item => `
+                    <div class="history-item">
+                        <div class="history-main">
+                            <div class="history-score-chip" style="background: ${item.bgColor}; color: ${item.textColor}; font-size:12px;">
+                                ${item.category}
+                            </div>
+                            <div class="history-info">
+                                <span class="history-status-txt">Terkumpul ${item.tasks.filter(t=>t.done).length}/${item.tasks.length} Selesai</span>
+                                <span class="history-date-txt">${item.dateStr}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function subscribeHistory(userId) {
+            const colRef = collection(db, 'artifacts', appId, 'users', userId, 'history');
+            unsubscribeHistoryListener = onSnapshot(colRef, (snapshot) => {
+                let records = [];
+                snapshot.forEach(doc => records.push({ id: doc.id, ...doc.data() }));
+                records.sort((a, b) => b.timestamp - a.timestamp);
+                renderChartAndHistory(records);
+            }, (err) => {
+                console.warn("Snapshot Listener Cleanup:", err.message);
+            });
+        }
+
+        // DELETE BMI RECORD & ASSOCIATED TASK AUTOMATICALLY
+        window.deleteHistoryItem = async function(docId, itemTimestamp) {
+            if (!currentUser) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'history', docId));
+
+                if (itemTimestamp) {
+                    const taskColRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'tasks');
+                    const q = query(taskColRef, where("timestamp", "==", itemTimestamp));
+                    const taskSnap = await getDocs(q);
+                    taskSnap.forEach(async (tdoc) => {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'tasks', tdoc.id));
+                    });
+                }
+
+                showToast("Item riwayat & task terasosiasi berhasil dihapus.");
+            } catch(err) {
+                showToast("Gagal menghapus: " + err.message, true);
+            }
+        };
+
+        function renderFallbackChart(records, wrapper) {
+            const svgNamespace = 'http://www.w3.org/2000/svg';
+            let svg = document.getElementById('historyChartFallback');
+            if (!svg) {
+                svg = document.createElementNS(svgNamespace, 'svg');
+                svg.id = 'historyChartFallback';
+                svg.setAttribute('viewBox', '0 0 600 210');
+                svg.setAttribute('role', 'img');
+                svg.setAttribute('aria-label', 'Grafik perkembangan BMI');
+                svg.style.width = '100%';
+                svg.style.height = '100%';
+                wrapper.appendChild(svg);
+            }
+            svg.replaceChildren();
+
+            const values = records
+                .map(record => ({ ...record, chartBmi: Number(record.bmi) }))
+                .filter(record => Number.isFinite(record.chartBmi));
+            if (values.length === 0) return;
+
+            const left = 48;
+            const right = 585;
+            const top = 16;
+            const bottom = 166;
+            const minimum = Math.min(...values.map(record => record.chartBmi));
+            const maximum = Math.max(...values.map(record => record.chartBmi));
+            const padding = Math.max(2, (maximum - minimum) * 0.2);
+            const minY = minimum - padding;
+            const maxY = maximum + padding;
+            const xFor = index => values.length === 1
+                ? (left + right) / 2
+                : left + (right - left) * index / (values.length - 1);
+            const yFor = value => bottom - (value - minY) / (maxY - minY) * (bottom - top);
+            const append = (tag, attributes, text) => {
+                const element = document.createElementNS(svgNamespace, tag);
+                Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+                if (text !== undefined) element.textContent = text;
+                svg.appendChild(element);
+                return element;
+            };
+
+            for (let index = 0; index <= 3; index++) {
+                const y = top + (bottom - top) * index / 3;
+                const value = maxY - (maxY - minY) * index / 3;
+                append('line', { x1: left, y1: y, x2: right, y2: y, stroke: '#e2e8f0', 'stroke-dasharray': '4 4' });
+                append('text', { x: left - 8, y: y + 4, 'text-anchor': 'end', fill: '#64748b', 'font-size': 10 }, value.toFixed(1));
+            }
+
+            const path = values.map((record, index) =>
+                `${index === 0 ? 'M' : 'L'} ${xFor(index)} ${yFor(record.chartBmi)}`
+            ).join(' ');
+            append('path', { d: path, fill: 'none', stroke: '#2f805c', 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+
+            values.forEach((record, index) => {
+                const x = xFor(index);
+                const y = yFor(record.chartBmi);
+                append('circle', { cx: x, cy: y, r: 5, fill: '#ffffff', stroke: '#2f805c', 'stroke-width': 3 });
+                append('text', { x, y: 195, 'text-anchor': 'middle', fill: '#64748b', 'font-size': 10 }, record.dateStr || '');
+            });
+        }
+
+        function renderChartAndHistory(records) {
+            const emptyChart = document.getElementById('emptyChart');
+            const listContainer = document.getElementById('historyList');
+            const canvas = document.getElementById('historyChart');
+
+            if (records.length === 0) {
+                emptyChart.style.display = 'flex';
+                if (chartInstance) chartInstance.destroy();
+                chartInstance = null;
+                document.getElementById('historyChartFallback')?.remove();
+                canvas.style.display = 'block';
+                listContainer.innerHTML = '<div style="font-size:13px; color:var(--muted); text-align:center; padding:15px;">Belum ada riwayat tersimpan.</div>';
+                return;
+            }
+
+            emptyChart.style.display = 'none';
+
+            const recent5 = [...records].slice(0, 5).reverse();
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+
+            if (typeof Chart === 'undefined') {
+                canvas.style.display = 'none';
+                renderFallbackChart(recent5, canvas.parentElement);
+            } else {
+                document.getElementById('historyChartFallback')?.remove();
+                canvas.style.display = 'block';
+                chartInstance = new Chart(canvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: recent5.map(r => r.dateStr),
+                        datasets: [{
+                            label: 'Skor BMI',
+                            data: recent5.map(r => r.bmi),
+                            borderColor: '#2f805c',
+                            backgroundColor: 'rgba(47, 128, 92, 0.08)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#2f805c',
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 0 } },
+                            y: { grid: { borderDash: [4, 4] }, beginAtZero: false }
+                        }
+                    }
+                });
+            }
+
+            listContainer.innerHTML = records.map(r => `
+                <div class="history-item">
+                    <div class="history-main">
+                        <div class="history-score-chip" style="background: ${r.color}15; color: ${r.color};">
+                            ${r.bmi}
+                        </div>
+                        <div class="history-info">
+                            <span class="history-status-txt">${r.status} (${r.weight} kg)</span>
+                            <span class="history-date-txt">${r.dateStr}</span>
+                        </div>
+                    </div>
+                    <button class="btn-delete-item" onclick="deleteHistoryItem('${r.id}', ${r.timestamp})" title="Hapus">
+                        <i class="ph-bold ph-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // EDIT PROFILE MODAL LOGIC
+        window.openEditProfileModal = function() {
+            document.getElementById('editName').value = document.getElementById('profNameTitle').textContent;
+            document.getElementById('editGender').value = userProfileData.gender || 'pria';
+            document.getElementById('editBirthDate').value = userProfileData.birthDate || '';
+            document.getElementById('editProfileModal').classList.remove('hidden');
+        };
+
+        window.closeEditProfileModal = function() {
+            document.getElementById('editProfileModal').classList.add('hidden');
+        };
+
+        document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const name = document.getElementById('editName').value;
+            const gender = document.getElementById('editGender').value;
+            const birthDate = document.getElementById('editBirthDate').value;
+            const age = calculateAgeFromBirthdate(birthDate);
+
+            try {
+                await updateProfile(currentUser, { displayName: name });
+                await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'info'), {
+                    fullName: name,
+                    gender: gender,
+                    birthDate: birthDate,
+                    age: age,
+                    email: currentUser.email,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+
+                userProfileData = { gender, birthDate, age };
+                updateProfileUI(name, currentUser.email);
+                closeEditProfileModal();
+                showToast("Profil berhasil diperbarui!");
+            } catch(err) {
+                showToast("Gagal memperbarui profil: " + err.message, true);
+            }
+        });
+
+        // SWITCH NAVIGATION VIEW WITH GREETING HEADER VISIBILITY
+        window.switchNav = function(viewName) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if (viewName === 'calculator') {
+                document.getElementById('navCalc').classList.add('active');
+            } else if (viewName === 'tasks') {
+                document.getElementById('navTasks').classList.add('active');
+            } else {
+                document.getElementById('navProfile').classList.add('active');
+            }
+
+            document.getElementById('welcomeCardHeader').style.display = viewName === 'calculator' ? 'block' : 'none';
+            document.getElementById('calculatorView').style.display = viewName === 'calculator' ? 'block' : 'none';
+            document.getElementById('tasksView').style.display = viewName === 'tasks' ? 'block' : 'none';
+            document.getElementById('profileView').style.display = viewName === 'profile' ? 'block' : 'none';
+
+            closeSidebar();
+        };
+
+        window.openSidebar = function() {
+            document.getElementById('appSidebar').classList.add('active');
+            document.getElementById('overlayBackdrop').classList.add('active');
+        };
+
+        window.closeSidebar = function() {
+            document.getElementById('appSidebar').classList.remove('active');
+            document.getElementById('overlayBackdrop').classList.remove('active');
+        };
+    </script>
+</body>
+</html>

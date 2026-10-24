@@ -389,7 +389,7 @@
             <!-- WELCOME HEADER BANNER (VISIBLE ONLY ON CALCULATOR VIEW) -->
             <section class="welcome-card" id="welcomeCardHeader">
                 <h1 id="welcomeGreeting">Selamat datang!</h1>
-                <p>Pantau Indeks Massa Tubuh (BMI) Anda secara berkala untuk menjaga kualitas kesehatan dan pola hidup seimbang bersama bodyfit.</p>
+                <p>Pantau Indeks Massa Tubuh (BMI) Anda dan ketahui kualitas kesehatan anda</p>
             </section>
 
             <!-- CALCULATOR & CHART VIEW (SINGLE INTEGRATED PAGE) -->
@@ -507,14 +507,14 @@
                 <section class="task-card">
                     <div class="task-header">
                         <div>
-                            <h3 style="font-size:16px; font-weight:800;" id="activeTaskTitle">Task Aktif Hari Ini</h3>
-                            <p style="font-size:12px; color:var(--muted);" id="activeTaskSubtitle">Selesaikan checklist tantangan harian Anda</p>
+                            <h3 style="font-size:16px; font-weight:800;" id="activeTaskTitle">Proses</h3>
+                            <p style="font-size:12px; color:var(--muted);" id="activeTaskSubtitle">Selesaikan checklist Tugas Anda</p>
                         </div>
                         <span class="info-pill" id="activeTaskCategoryBadge">Task Fit</span>
                     </div>
 
                     <div class="task-list-items" id="taskListContainer">
-                        <p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada task aktif. Hitung BMI Anda di tab Kalkulator untuk menerima task tantangan 1 hari.</p>
+                        <p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada Kegiatan. Hitung BMI Anda di tab Kalkulator untuk menentukan kegiatan.</p>
                     </div>
 
                     <div id="taskActionFooter" style="display: none; margin-top: 20px;">
@@ -525,9 +525,9 @@
                 </section>
 
                 <section class="task-card">
-                    <h3 style="font-size:15px; font-weight:800; margin-bottom:14px;">Riwayat Task Tersimpan</h3>
+                    <h3 style="font-size:15px; font-weight:800; margin-bottom:14px;">Riwayat Kegiatan Tersimpan</h3>
                     <div class="history-list" id="savedTaskHistoryList">
-                        <p style="font-size:13px; color:var(--muted); text-align:center; padding:10px;">Belum ada riwayat task permanen.</p>
+                        <p style="font-size:13px; color:var(--muted); text-align:center; padding:10px;">Belum ada riwayat Kegiatan permanen.</p>
                     </div>
                 </section>
             </div>
@@ -952,7 +952,7 @@
         });
 
         function updateProfileUI(name, email) {
-            document.getElementById('welcomeGreeting').textContent = `Halo, ${name}! 👋`;
+            document.getElementById('welcomeGreeting').textContent = `Halo, ${name} :)`;
             document.getElementById('userNameText').textContent = name;
             document.getElementById('userEmailText').textContent = email || 'Tersambung Online';
             document.getElementById('avatarLetter').textContent = name.charAt(0).toUpperCase();
@@ -983,7 +983,7 @@
             e.preventDefault();
             isRegisterMode = !isRegisterMode;
             document.getElementById('authTitle').textContent = isRegisterMode ? 'Buat Akun bodyfit' : 'Masuk ke bodyfit';
-            document.getElementById('authSubtitle').textContent = isRegisterMode ? 'Daftar untuk memantau BMI dan task olahraga harian.' : 'Silakan masuk untuk menyimpan riwayat BMI dan task olahraga online.';
+            document.getElementById('authSubtitle').textContent = isRegisterMode ? 'Daftar untuk memantau BMI dan olahraga harian.' : 'Silakan masuk untuk menyimpan riwayat BMI.';
             document.getElementById('registerFields').style.display = isRegisterMode ? 'flex' : 'none';
             document.getElementById('btnAuthSubmit').textContent = isRegisterMode ? 'Daftar Sekarang' : 'Masuk';
             document.getElementById('authSwitchText').textContent = isRegisterMode ? 'Sudah punya akun?' : 'Belum punya akun?';
@@ -1048,7 +1048,7 @@
                 document.getElementById('height').value = '';
                 document.getElementById('resultSection').style.display = 'none';
                 document.getElementById('recommendationCard').style.display = 'none';
-                document.getElementById('taskListContainer').innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada task aktif. Hitung BMI Anda di tab Kalkulator untuk menerima task tantangan 1 hari.</p>';
+                document.getElementById('taskListContainer').innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada kegiatan. Hitung BMI Anda di tab Kalkulator untuk menentukan kegiatan .</p>';
                 document.getElementById('taskActionFooter').style.display = 'none';
                 
                 if (chartInstance) { chartInstance.destroy(); chartInstance = null; }

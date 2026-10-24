@@ -1,6 +1,6 @@
 # bodyfit — Kalkulator BMI & Kebugaran Harian
 
-bodyfit adalah aplikasi web interaktif berbasis *Single-Page Application* (SPA) untuk menghitung Indeks Massa Tubuh (BMI), memantau riwayat kesehatan, dan menjalankan tantangan kebugaran harian berdasarkan kategori BMI.
+bodyfit adalah aplikasi web interaktif berbasis *Single-Page Application* (SPA) untuk menghitung Indeks Massa Tubuh (BMI), memantau riwayat kesehatan, dan mendapatkan rekomendasi tugas/kegiatan kebugaran berdasarkan kategori BMI.
 
 Aplikasi ini dibuat dengan HTML5, CSS3 responsif, JavaScript ES Modules, Firebase Authentication, Cloud Firestore, dan Chart.js.
 
@@ -11,8 +11,9 @@ Aplikasi ini dibuat dengan HTML5, CSS3 responsif, JavaScript ES Modules, Firebas
 - **Kalkulator BMI:** menghitung BMI dari berat badan (kg) dan tinggi badan (cm), lalu menampilkan kategori kurus, ideal, berlebih, atau obesitas.
 - **Siluet dinamis:** menampilkan ilustrasi karakter pria atau wanita dengan ukuran yang menyesuaikan skor BMI.
 - **Rekomendasi kebugaran:** menyajikan skala BMI berwarna dan kartu rekomendasi dalam tata letak grid 2 × 2.
-- **Tantangan harian:** menawarkan aktivitas olahraga yang dapat diterima atau ditolak, dicentang, dan disimpan ke Firestore.
-- **Grafik dan riwayat:** menampilkan lima perhitungan BMI terbaru dan menyinkronkan data dengan Firestore. Penghapusan entri riwayat juga menghapus task terkait.
+- **Tugas/kegiatan:** rekomendasi dapat diterima atau ditolak. Tugas yang diterima tersimpan di Firestore dengan tenggat 24 jam; checklist tersimpan otomatis dan terkunci setelah tugas selesai atau tenggat berakhir.
+- **Hasil dan riwayat tugas/kegiatan:** menampilkan waktu **Starts** dan **Finish**, jumlah kegiatan yang diselesaikan, serta checklist hijau untuk yang selesai dan merah untuk yang terlewat.
+- **Grafik dan riwayat:** menampilkan lima perhitungan BMI terbaru dan menyinkronkan data dengan Firestore. Penghapusan entri riwayat juga menghapus tugas/kegiatan terkait.
 - **Desain responsif:** mendukung tampilan desktop dan ponsel serta dapat ditambahkan ke layar utama melalui fitur *Add to Home Screen*.
 
 ## Teknologi
@@ -38,7 +39,7 @@ Firebase App, Authentication, dan Firestore diinisialisasi melalui CDN. `onAuthS
 
 Pengguna dapat beralih antara mode masuk dan daftar. Saat mendaftar, aplikasi membuat akun menggunakan `createUserWithEmailAndPassword` dan menyimpan nama lengkap, jenis kelamin, tanggal lahir, serta usia ke Firestore. Pesan kesalahan autentikasi ditampilkan melalui notifikasi toast.
 
-### 3. Perhitungan BMI dan tantangan harian
+### 3. Perhitungan BMI dan rekomendasi tugas/kegiatan
 
 Pengguna memasukkan berat badan dalam kilogram dan tinggi badan dalam sentimeter. BMI dihitung dengan rumus:
 
@@ -46,15 +47,17 @@ $$
 \text{BMI} = \frac{\text{Berat Badan (kg)}}{\left(\frac{\text{Tinggi Badan (cm)}}{100}\right)^2}
 $$
 
-Setelah perhitungan, aplikasi menyimpan data ke koleksi `history`, memperbarui skala siluet SVG, dan menampilkan modal tantangan olahraga harian. Pengguna dapat menerima tantangan untuk menambahkannya ke tab **Task Saya**, atau menolaknya.
+Setelah perhitungan, aplikasi menyimpan data ke koleksi `history`, memperbarui skala siluet SVG, dan menampilkan modal **Tugas Harian**. Pengguna dapat menerima kegiatan untuk menambahkannya ke tab **Kegiatan Saya**, atau menolaknya.
 
-### 4. Pengelolaan dan penyimpanan task
+### 4. Pengelolaan dan penyimpanan tugas/kegiatan
 
-Di tab **Task Saya**, pengguna dapat mencentang aktivitas yang telah dilakukan. Tombol **Kumpulkan Task / Simpan Permanen** membuka modal konfirmasi. Setelah disetujui, task disimpan ke koleksi `tasks` dan masuk ke riwayat task tersimpan.
+Saat diterima, tugas/kegiatan disimpan ke koleksi `tasks` dengan waktu mulai dan tenggat 24 jam. Checklist disinkronkan ke Firestore setiap kali berubah. Tugas dapat diselesaikan lebih awal atau akan ditutup otomatis saat tenggat tercapai; hasilnya masuk ke riwayat dengan checklist terkunci.
+
+Penutupan otomatis berjalan saat aplikasi terbuka. Jika browser atau aplikasi ditutup ketika tenggat terlewati, tugas akan difinalisasi otomatis saat pengguna membuka aplikasi kembali. Penjadwalan saat aplikasi benar-benar tertutup memerlukan backend terjadwal, seperti Firebase Cloud Functions.
 
 ### 5. Sinkronisasi dan penghapusan riwayat
 
-Listener Firestore `onSnapshot` memantau koleksi `history` dan `tasks` secara real-time. Grafik Chart.js diperbarui dengan lima data BMI terbaru. Menghapus entri riwayat BMI juga menghapus dokumen task terkait berdasarkan timestamp.
+Listener Firestore `onSnapshot` memantau koleksi `history` dan `tasks` secara real-time. Grafik Chart.js diperbarui dengan lima data BMI terbaru. Menghapus entri riwayat BMI juga menghapus dokumen tugas/kegiatan terkait berdasarkan timestamp.
 
 ### 6. Logout
 

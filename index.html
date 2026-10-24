@@ -230,7 +230,16 @@
         .task-row-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #f8fafc; border: 1px solid var(--line); border-radius: var(--radius-md); transition: .2s; }
         .task-checkbox { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
         .task-label { font-size: 13px; font-weight: 600; color: var(--ink); flex: 1; }
-        .task-row-item.completed { background: #f1f5f9; text-decoration: line-through; opacity: 0.65; }
+        .task-row-item.completed { background: #ecfdf5; border-color: #86efac; }
+        .task-row-item.missed { background: #fef2f2; border-color: #fca5a5; }
+        .task-row-item.completed .task-label { color: #15803d; }
+        .task-row-item.missed .task-label { color: #b91c1c; }
+        .task-row-item.locked { cursor: default; }
+        .task-row-item.locked .task-checkbox { cursor: not-allowed; }
+        .task-history-times { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; font-size: 11px; color: var(--muted); }
+        .task-result-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .task-result-list .task-row-item { padding: 8px 10px; }
+        .task-result-list .task-label { font-size: 12px; }
 
         /* PROFILE ENHANCEMENT WITH VERIFIED CHECKMARK NEXT TO NAME */
         .profile-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow); }
@@ -356,7 +365,7 @@
                         <i class="ph-bold ph-calculator"></i> Kalkulator & Grafik
                     </li>
                     <li class="nav-item" id="navTasks" onclick="switchNav('tasks')">
-                        <i class="ph-bold ph-check-square"></i> Task Saya
+                        <i class="ph-bold ph-check-square"></i> Kegiatan Saya
                     </li>
                     <li class="nav-item" id="navProfile" onclick="switchNav('profile')">
                         <i class="ph-bold ph-user-circle"></i> Profil Saya
@@ -468,7 +477,7 @@
                         </div>
                         <div class="rec-title-wrap">
                             <h3>Rekomendasi Fit</h3>
-                            <p>Panduan klinis harian terprogram sesuai kategori BMI Anda</p>
+                            <p>Panduan kebugaran sesuai kategori BMI Anda</p>
                         </div>
                     </div>
 
@@ -507,27 +516,27 @@
                 <section class="task-card">
                     <div class="task-header">
                         <div>
-                            <h3 style="font-size:16px; font-weight:800;" id="activeTaskTitle">Proses</h3>
-                            <p style="font-size:12px; color:var(--muted);" id="activeTaskSubtitle">Selesaikan checklist Tugas Anda</p>
+                            <h3 style="font-size:16px; font-weight:800;" id="activeTaskTitle">Kegiatan</h3>
+                            <p style="font-size:12px; color:var(--muted);" id="activeTaskSubtitle">Belum ada kegiatan.</p>
                         </div>
-                        <span class="info-pill" id="activeTaskCategoryBadge">Task Fit</span>
+                        <span class="info-pill" id="activeTaskCategoryBadge">Kegiatan</span>
                     </div>
 
                     <div class="task-list-items" id="taskListContainer">
-                        <p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada Kegiatan. Hitung BMI Anda di tab Kalkulator untuk menentukan kegiatan.</p>
+                        <p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada kegiatan. Mulai hitung BMI di tab Kalkulator untuk melihat rekomendasi.</p>
                     </div>
 
                     <div id="taskActionFooter" style="display: none; margin-top: 20px;">
                         <button type="button" class="btn-auth-submit" onclick="openConfirmTaskSaveModal()">
-                            <i class="ph-bold ph-floppy-disk"></i> Kumpulkan Task / Simpan Permanen
+                            <i class="ph-bold ph-floppy-disk"></i> Selesaikan & Simpan Sekarang
                         </button>
                     </div>
                 </section>
 
                 <section class="task-card">
-                    <h3 style="font-size:15px; font-weight:800; margin-bottom:14px;">Riwayat Kegiatan Tersimpan</h3>
+                    <h3 style="font-size:15px; font-weight:800; margin-bottom:14px;">Riwayat Kegiatan</h3>
                     <div class="history-list" id="savedTaskHistoryList">
-                        <p style="font-size:13px; color:var(--muted); text-align:center; padding:10px;">Belum ada riwayat Kegiatan permanen.</p>
+                        <p style="font-size:13px; color:var(--muted); text-align:center; padding:10px;">Belum ada riwayat kegiatan.</p>
                     </div>
                 </section>
             </div>
@@ -574,7 +583,7 @@
         </main>
     </div>
 
-    <!-- TASK POP-UP MODAL (AFTER BMI CALCULATION) -->
+    <!-- TUGAS POP-UP MODAL (AFTER BMI CALCULATION) -->
     <div class="auth-overlay hidden" id="taskPopUpModal">
         <div class="auth-card" style="width: min(480px, 100%);">
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
@@ -582,7 +591,7 @@
                     <i class="ph-bold ph-target"></i>
                 </div>
                 <div>
-                    <h3 style="font-size:16px; font-weight:800;" id="popCategoryLabel">Tantangan Task 1 Hari</h3>
+                    <h3 style="font-size:16px; font-weight:800;" id="popCategoryLabel">List Kegiatan</h3>
                     <p style="font-size:11px; color:var(--muted);">Terprogram sesuai kategori BMI Anda</p>
                 </div>
             </div>
@@ -593,16 +602,16 @@
                 <p style="font-size:12px; color:#475569; margin-top:4px;" id="popCategorySummary">Summary penjelasan</p>
             </div>
 
-            <p style="font-size:12px; font-weight:700; color:#1e293b; margin-bottom:8px;">Tantangan Task 1 Hari untuk Anda:</p>
+            <p style="font-size:12px; font-weight:700; color:#1e293b; margin-bottom:8px;">Kegiatan untuk Anda:</p>
             <ul id="popTaskList" style="list-style:none; display:flex; flex-direction:column; gap:6px; margin-bottom:16px; max-height:160px; overflow-y:auto; font-size:12px; color:#334155;">
                 <!-- Dynamically populated -->
             </ul>
 
-            <p style="font-size:12px; font-weight:700; text-align:center; color:#64748b; margin-bottom:14px;">Apakah Anda bersedia menerima dan menjalankan task 1 hari ini?</p>
+            <p style="font-size:12px; font-weight:700; text-align:center; color:#64748b; margin-bottom:14px;">Batas penyelesaian 24 jam.</p>
 
             <div class="btn-action-wrap">
-                <button type="button" class="btn-logout" style="background:#f1f5f9; color:#64748b; margin:0;" onclick="closeTaskPopUpModal(false)">Tolak</button>
-                <button type="button" class="btn-auth-submit" style="margin:0;" onclick="closeTaskPopUpModal(true)">Terima Task 1 Hari</button>
+                <button type="button" class="btn-logout" id="rejectTaskBtn" style="background:#f1f5f9; color:#64748b; margin:0;" onclick="closeTaskPopUpModal(false)">Tolak</button>
+                <button type="button" class="btn-auth-submit" id="acceptTaskBtn" style="margin:0;" onclick="closeTaskPopUpModal(true)">Terima</button>
             </div>
         </div>
     </div>
@@ -610,11 +619,11 @@
     <!-- CONFIRMATION MODAL FOR PERMANENT TASK SUBMISSION -->
     <div class="auth-overlay hidden" id="confirmTaskSaveModal">
         <div class="auth-card">
-            <h2 style="color:#1e293b; font-size:18px;">Konfirmasi Pengumpulkan Task</h2>
-            <p style="margin-bottom:20px;">Apakah Anda yakin mengumpulkan task ini? Data yang sudah dikumpulkan akan tersimpan permanen di cloud dan tidak dapat diedit lagi.</p>
+            <h2 style="color:#1e293b; font-size:18px;">Selesaikan Kegiatan</h2>
+            <p style="margin-bottom:20px;">Kegiatan akan disimpan ke riwayat dan checklist.</p>
             <div class="btn-action-wrap">
                 <button type="button" class="btn-logout" style="background:#e2e8f0; color:#475569; margin:0;" onclick="closeConfirmTaskSaveModal()">Batal</button>
-                <button type="button" class="btn-auth-submit" style="margin:0;" onclick="submitActiveTaskPermanently()">Ya, Kumpulkan</button>
+                <button type="button" class="btn-auth-submit" style="margin:0;" onclick="submitActiveTaskPermanently()">Selesaikan</button>
             </div>
         </div>
     </div>
@@ -623,7 +632,7 @@
     <div class="auth-overlay" id="authModal">
         <div class="auth-card">
             <h2 id="authTitle">Masuk ke bodyfit</h2>
-            <p id="authSubtitle">Silakan masuk untuk menyimpan riwayat BMI dan task olahraga online.</p>
+            <p id="authSubtitle">Silakan masuk untuk menyimpan riwayat BMI dan kegiatan olahraga.</p>
             
             <form class="auth-form" id="authForm">
                 <div id="registerFields" style="display: none; flex-direction: column; gap: 16px;">
@@ -730,7 +739,8 @@
             getDocs, 
             query, 
             where, 
-            onSnapshot 
+            onSnapshot,
+            updateDoc
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'bodyfit-bmi-app';
@@ -762,6 +772,8 @@
         let isRegisterMode = false;
         let chartInstance = null;
         let pendingTaskObj = null;
+        let activeTaskObj = null;
+        let taskDeadlineTimer = null;
         let userProfileData = { gender: 'pria', birthDate: '', age: 25 };
 
         // PASSWORD VISIBILITY TOGGLE FUNCTION
@@ -781,63 +793,63 @@
         function getCategoryData(bmi) {
             if (bmi < 18.5) return { 
                 label: 'Sangat Kurus', color: '#60a5fa', bgColor: '#eff6ff', textColor: '#2563eb', scale: 0.75,
-                summary: 'Indeks massa tubuh rendah. Jalankan 5 task ringan hari ini untuk asupan nutrisi & pembentukan otot harian.',
+                summary: 'Indeks massa tubuh rendah. Pilih aktivitas ringan untuk mendukung asupan nutrisi dan pembentukan otot.',
                 recs: [
                     { title: 'Latihan Beban Tubuh Ringan', desc: 'Lakukan gerakan dasar beban tubuh untuk merangsang pertumbuhan massa otot.' },
-                    { title: 'Asupan Protein Ekstra', desc: 'Konsumsi telur rebus, dada ayam, atau susu utuh untuk mendukung nutrisi harian.' },
-                    { title: 'Jalan Santai Pagi', desc: 'Jalan santai durasi singkat untuk memicu kebugaran dan nafsu makan.' },
-                    { title: 'Istirahat Cukup Malam Ini', desc: 'Utamakan tidur teratur minimal 7.5 jam untuk pemulihan fisik alami.' }
+                    { title: 'Asupan Protein', desc: 'Konsumsi telur rebus, dada ayam, atau susu untuk mendukung kebutuhan nutrisi.' },
+                    { title: 'Jalan Santai', desc: 'Berjalan santai untuk mendukung kebugaran dan nafsu makan.' },
+                    { title: 'Istirahat Cukup', desc: 'Utamakan tidur teratur minimal 7.5 jam untuk pemulihan fisik.' }
                 ],
                 tasks: [
-                    'Jalan santai pagi 15-20 menit hari ini',
+                    'Jalan santai 15-20 menit',
                     'Push-up / Knee Push-up 2 set x 10 kali',
                     'Bodyweight Squat 2 set x 12 kali',
-                    'Minum 2 gelas susu atau makan 2 butir telur rebus hari ini',
+                    'Minum 2 gelas susu atau makan 2 butir telur rebus',
                     'Lakukan stretching seluruh tubuh selama 8 menit'
                 ]
             };
             if (bmi < 25) return { 
                 label: 'Berat Ideal', color: '#10b981', bgColor: '#ecfdf5', textColor: '#059669', scale: 1.0,
-                summary: 'Tubuh Anda dalam kondisi sangat ideal! Pertahankan kebugaran dengan 5 tantangan harian seimbang.',
+                summary: 'Tubuh Anda dalam kondisi sangat ideal. Pertahankan kebugaran dengan aktivitas yang seimbang.',
                 recs: [
-                    { title: 'Olahraga Aerobik Teratur', desc: 'Lakukan jalan cepat atau jogging santai selama 20-25 menit hari ini.' },
-                    { title: 'Gizi Seimbang 1 Hari', desc: 'Penuhi porsi makan dengan kombinasi sayur, buah, dan protein tanpa lemak.' },
-                    { title: 'Peregangan Pagi / Sore', desc: 'Lakukan peregangan tubuh 10 menit untuk kelenturan otot harian.' },
-                    { title: 'Hidrasi Cukup Harian', desc: 'Minum minimal 2.5 liter air putih sepanjang hari ini.' }
+                    { title: 'Olahraga Aerobik Teratur', desc: 'Lakukan jalan cepat atau jogging santai selama 20-25 menit.' },
+                    { title: 'Gizi Seimbang', desc: 'Penuhi porsi makan dengan kombinasi sayur, buah, dan protein tanpa lemak.' },
+                    { title: 'Peregangan', desc: 'Lakukan peregangan tubuh selama 10 menit untuk menjaga kelenturan otot.' },
+                    { title: 'Hidrasi Cukup', desc: 'Minum air putih yang cukup sesuai kebutuhan tubuh.' }
                 ],
                 tasks: [
-                    'Jogging / Jalan cepat santai 25 menit hari ini',
+                    'Jogging / Jalan cepat santai 25 menit',
                     'Jumping Jacks 3 set x 15 kali',
                     'Plank tahan selama 45 detik',
                     'Peregangan fleksibilitas seluruh tubuh 10 menit',
-                    'Cukupi konsumsi air putih minimal 2.5 Liter'
+                    'Cukupi konsumsi air putih'
                 ]
             };
             if (bmi < 30) return { 
                 label: 'Kelebihan Berat', color: '#fbbf24', bgColor: '#fef3c7', textColor: '#d97706', scale: 1.25,
-                summary: 'Terdeteksi kelebihan berat badan. Lakukan 5 task harian terukur untuk membakar kalori aktif.',
+                summary: 'Terdeteksi kelebihan berat badan. Pilih aktivitas terukur untuk mendukung kebugaran.',
                 recs: [
-                    { title: 'Jalan Kaki Aktif Harian', desc: 'Targetkan jalan kaki 30 menit untuk meningkatkan pembakaran kalori harian.' },
+                    { title: 'Jalan Kaki Aktif', desc: 'Targetkan jalan kaki 30 menit untuk meningkatkan kebugaran.' },
                     { title: 'Latihan Inti & Stabilitas', desc: 'Lakukan gerakan plank dan wall-sit untuk melatih otot perut dan paha.' },
-                    { title: 'Bebas Minuman Manis 1 Hari', desc: 'Ganti seluruh minuman manis dengan air putih atau teh tanpa gula.' },
+                    { title: 'Pilih Minuman Tanpa Gula', desc: 'Ganti minuman manis dengan air putih atau teh tanpa gula.' },
                     { title: 'Gunakan Piring Lebih Kecil', desc: 'Atur porsi makan siang dan malam dengan piring lebih ringkas.' }
                 ],
                 tasks: [
-                    'Jalan kaki aktif 30 menit tanpa henti hari ini',
+                    'Jalan kaki aktif 30 menit tanpa henti',
                     'Plank stabil 2 set x 35 detik',
                     'Wall Sit tahan 2 set x 30 detik',
                     'Jalan naik-turun tangga 5 menit santai',
-                    'Bebas dari minuman berkalori manis sepanjang hari'
+                    'Hindari minuman berkalori manis'
                 ]
             };
             return { 
                 label: 'Obesitas', color: '#f87171', bgColor: '#fef2f2', textColor: '#dc2626', scale: 1.6,
                 summary: 'Kategori obesitas terdeteksi. Utamakan olahraga ringan (low-impact) aman untuk persendian.',
                 recs: [
-                    { title: 'Jalan Santai Lintasan Datar', desc: 'Lakukan jalan santai di permukaan rata selama 20 menit hari ini.' },
+                    { title: 'Jalan Santai Lintasan Datar', desc: 'Lakukan jalan santai di permukaan rata selama 20 menit.' },
                     { title: 'Peregangan Sendi & Pernapasan', desc: 'Lakukan peregangan halus dan latihan pernapasan untuk kebugaran.' },
-                    { title: 'Tambah Porsi Sayur Kukus', desc: 'Konsumsi sayur kukus pada waktu makan siang atau malam hari ini.' },
-                    { title: 'Hindari Camilan Jam Malam', desc: 'Hentikan makan cemilan berat di atas jam 8 malam ini.' }
+                    { title: 'Tambah Porsi Sayur Kukus', desc: 'Konsumsi sayur kukus sebagai bagian dari menu makan.' },
+                    { title: 'Batasi Camilan Malam', desc: 'Hindari camilan berat menjelang waktu tidur.' }
                 ],
                 tasks: [
                     'Jalan santai ringan di permukaan rata 20 menit',
@@ -847,6 +859,18 @@
                     'Konsumsi porsi ekstra sayur kukus & hindari camilan malam'
                 ]
             };
+        }
+
+        function normalizeActivityItems(items, bmi, useCategoryFallback = false) {
+            const normalizedItems = (Array.isArray(items) ? items : [])
+                .filter(item => typeof item === 'string' || (item && typeof item.title === 'string'))
+                .map(item => typeof item === 'string'
+                    ? { title: item, done: false }
+                    : { title: item.title, done: item.done === true });
+
+            if (normalizedItems.length > 0 || !useCategoryFallback) return normalizedItems;
+
+            return getCategoryData(Number(bmi)).tasks.map(title => ({ title, done: false }));
         }
 
         function calculateAgeFromBirthdate(birthDateString) {
@@ -900,7 +924,7 @@
                     // Recommendations Grid
                     const recCard = document.getElementById('recommendationCard');
                     recCard.style.display = 'block';
-                    document.getElementById('recGrid').innerHTML = data.recs.map(r => `
+                    document.getElementById('recGrid').innerHTML = (Array.isArray(data.recs) ? data.recs : []).map(r => `
                         <div class="rec-item">
                             <div class="rec-item-title">
                                 <span class="rec-bullet" style="background:${data.color}"></span> ${r.title}
@@ -991,7 +1015,7 @@
             e.preventDefault();
             isRegisterMode = !isRegisterMode;
             document.getElementById('authTitle').textContent = isRegisterMode ? 'Buat Akun bodyfit' : 'Masuk ke bodyfit';
-            document.getElementById('authSubtitle').textContent = isRegisterMode ? 'Daftar untuk memantau BMI dan olahraga harian.' : 'Silakan masuk untuk menyimpan riwayat BMI.';
+            document.getElementById('authSubtitle').textContent = isRegisterMode ? 'Daftar untuk memantau BMI dan kegiatan olahraga.' : 'Silakan masuk untuk menyimpan riwayat BMI.';
             document.getElementById('registerFields').style.display = isRegisterMode ? 'flex' : 'none';
             setRegisterFieldsEnabled(isRegisterMode);
             document.getElementById('btnAuthSubmit').textContent = isRegisterMode ? 'Daftar Sekarang' : 'Masuk';
@@ -1048,16 +1072,19 @@
             try {
                 if (unsubscribeHistoryListener) { unsubscribeHistoryListener(); unsubscribeHistoryListener = null; }
                 if (unsubscribeTasksListener) { unsubscribeTasksListener(); unsubscribeTasksListener = null; }
+                if (taskDeadlineTimer) { clearTimeout(taskDeadlineTimer); taskDeadlineTimer = null; }
 
                 await signOut(auth);
                 currentUser = null;
+                activeTaskObj = null;
+                pendingTaskObj = null;
 
                 // Reset Forms & Views
                 document.getElementById('weight').value = '';
                 document.getElementById('height').value = '';
                 document.getElementById('resultSection').style.display = 'none';
                 document.getElementById('recommendationCard').style.display = 'none';
-                document.getElementById('taskListContainer').innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada kegiatan. Hitung BMI Anda di tab Kalkulator untuk menentukan kegiatan .</p>';
+                document.getElementById('taskListContainer').innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada kegiatan. Hitung BMI di tab Kalkulator untuk melihat rekomendasi.</p>';
                 document.getElementById('taskActionFooter').style.display = 'none';
                 
                 if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
@@ -1096,7 +1123,7 @@
             // Render Recommendations Grid
             const recCard = document.getElementById('recommendationCard');
             recCard.style.display = 'block';
-            document.getElementById('recGrid').innerHTML = data.recs.map(r => `
+            document.getElementById('recGrid').innerHTML = (Array.isArray(data.recs) ? data.recs : []).map(r => `
                 <div class="rec-item">
                     <div class="rec-item-title">
                         <span class="rec-bullet" style="background:${data.color}"></span> ${r.title}
@@ -1118,6 +1145,11 @@
             const timestamp = now.getTime();
 
             try {
+                const activityItems = normalizeActivityItems(data.tasks, bmi);
+                if (activityItems.length === 0) {
+                    throw new Error('Rekomendasi kegiatan tidak tersedia untuk kategori BMI ini.');
+                }
+
                 const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'history');
                 await addDoc(colRef, {
                     bmi: bmi,
@@ -1135,7 +1167,7 @@
                     textColor: data.textColor,
                     bgColor: data.bgColor,
                     summary: data.summary,
-                    tasks: data.tasks.map(t => ({ title: t, done: false })),
+                    tasks: activityItems,
                     timestamp: timestamp,
                     dateStr: dateStr
                 };
@@ -1147,11 +1179,13 @@
         });
 
         function triggerTaskPopUpModal(taskObj) {
-            document.getElementById('popCategoryLabel').textContent = `Tantangan Task Fit (${taskObj.category})`;
+            const activityItems = normalizeActivityItems(taskObj.tasks, taskObj.bmi, true);
+            document.getElementById('popCategoryLabel').textContent = `List Kegiatan · ${taskObj.category}`;
             document.getElementById('popBmiScore').textContent = `${taskObj.bmi} kg/m²`;
             document.getElementById('popCategorySummary').textContent = taskObj.summary;
 
-            document.getElementById('popTaskList').innerHTML = taskObj.tasks.map(t => `
+            taskObj.tasks = activityItems;
+            document.getElementById('popTaskList').innerHTML = activityItems.map(t => `
                 <li style="display:flex; align-items:center; gap:8px;">
                     <i class="ph-bold ph-check-circle" style="color:${taskObj.textColor}"></i> ${t.title}
                 </li>
@@ -1160,14 +1194,126 @@
             document.getElementById('taskPopUpModal').classList.remove('hidden');
         }
 
-        window.closeTaskPopUpModal = function(accepted) {
-            document.getElementById('taskPopUpModal').classList.add('hidden');
-            if (accepted && pendingTaskObj) {
-                renderActiveTasks(pendingTaskObj);
+        const TASK_DEADLINE_MS = 24 * 60 * 60 * 1000;
+
+        function getTaskStartedAt(task) {
+            return Number(task.startedAt || task.timestamp || 0);
+        }
+
+        function getTaskDeadline(task) {
+            return Number(task.deadlineAt || (getTaskStartedAt(task) + TASK_DEADLINE_MS));
+        }
+
+        function formatTaskDateTime(timestamp) {
+            if (!timestamp || !Number.isFinite(Number(timestamp))) return '—';
+            return new Intl.DateTimeFormat('id-ID', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            }).format(new Date(Number(timestamp)));
+        }
+
+        async function finalizeExpiredTasks(tasks, userId) {
+            const now = Date.now();
+            const expiredTasks = tasks.filter(task =>
+                task.status === 'active' && getTaskDeadline(task) <= now
+            );
+
+            await Promise.all(expiredTasks.map(task => updateDoc(
+                doc(db, 'artifacts', appId, 'users', userId, 'tasks', task.id),
+                {
+                    status: 'completed',
+                    finishedAt: getTaskDeadline(task)
+                }
+            )));
+        }
+
+        function scheduleTaskDeadline(tasks, userId) {
+            if (taskDeadlineTimer) clearTimeout(taskDeadlineTimer);
+            const activeTasks = tasks.filter(task => task.status === 'active');
+            if (activeTasks.length === 0) {
+                taskDeadlineTimer = null;
+                return;
+            }
+
+            const nextDeadline = Math.min(...activeTasks.map(getTaskDeadline));
+            taskDeadlineTimer = setTimeout(() => {
+                finalizeExpiredTasks(activeTasks, userId).catch(error => {
+                    console.error('Gagal menyelesaikan kegiatan yang melewati batas waktu:', error);
+                    showToast('Gagal menyimpan hasil kegiatan otomatis: ' + error.message, true);
+                });
+            }, Math.max(0, nextDeadline - Date.now()));
+        }
+
+        let isAcceptingTask = false;
+
+        window.closeTaskPopUpModal = async function(accepted) {
+            if (isAcceptingTask) return;
+            if (!accepted || !pendingTaskObj || !currentUser) {
+                document.getElementById('taskPopUpModal').classList.add('hidden');
+                pendingTaskObj = null;
+                if (!accepted) showToast('Kegiatan ditolak.');
+                return;
+            }
+
+            isAcceptingTask = true;
+            document.getElementById('rejectTaskBtn').disabled = true;
+            document.getElementById('acceptTaskBtn').disabled = true;
+            const candidateTask = pendingTaskObj;
+            const userId = currentUser.uid;
+            const taskCollection = collection(db, 'artifacts', appId, 'users', userId, 'tasks');
+            try {
+                const candidateActivities = normalizeActivityItems(candidateTask.tasks, candidateTask.bmi, true);
+                if (candidateActivities.length === 0) {
+                    throw new Error('Daftar kegiatan tidak tersedia. Silakan hitung BMI kembali.');
+                }
+
+                const snapshot = await getDocs(taskCollection);
+                const savedTasks = snapshot.docs.map(taskDoc => ({
+                    id: taskDoc.id,
+                    ...taskDoc.data()
+                }));
+                await finalizeExpiredTasks(savedTasks, userId);
+
+                const hasActiveTask = savedTasks.some(task =>
+                    task.status === 'active' && getTaskDeadline(task) > Date.now()
+                );
+                if (hasActiveTask) {
+                    document.getElementById('taskPopUpModal').classList.add('hidden');
+                    pendingTaskObj = null;
+                    showToast('Selesaikan kegiatan aktif sebelum menerima yang baru.', true);
+                    return;
+                }
+
+                const startedAt = Date.now();
+                const taskToSave = {
+                    category: candidateTask.category,
+                    bmi: candidateTask.bmi,
+                    color: candidateTask.color,
+                    textColor: candidateTask.textColor,
+                    bgColor: candidateTask.bgColor,
+                    tasks: candidateActivities,
+                    dateStr: candidateTask.dateStr,
+                    timestamp: candidateTask.timestamp,
+                    startedAt,
+                    deadlineAt: startedAt + TASK_DEADLINE_MS,
+                    finishedAt: null,
+                    status: 'active'
+                };
+                const taskRef = await addDoc(taskCollection, taskToSave);
+
+                activeTaskObj = { ...taskToSave, id: taskRef.id };
+                pendingTaskObj = null;
+                document.getElementById('taskPopUpModal').classList.add('hidden');
+                renderActiveTasks(activeTaskObj);
                 switchNav('tasks');
-                showToast("Task 1 Hari diterima! Selesaikan checklist Anda.");
-            } else {
-                showToast("Task ditolak.");
+                showToast('Kegiatan diterima. Batas penyelesaian 24 jam.');
+            } catch (error) {
+                console.error('Gagal menyimpan kegiatan:', error);
+                showToast('Gagal menyimpan kegiatan: ' + error.message, true);
+            } finally {
+                isAcceptingTask = false;
+                document.getElementById('rejectTaskBtn').disabled = false;
+                document.getElementById('acceptTaskBtn').disabled = false;
             }
         };
 
@@ -1176,25 +1322,60 @@
             document.getElementById('activeTaskCategoryBadge').style.backgroundColor = taskObj.bgColor;
             document.getElementById('activeTaskCategoryBadge').style.color = taskObj.textColor;
 
+            const isActive = taskObj.status === 'active';
+            document.getElementById('activeTaskTitle').textContent = isActive
+                ? 'List Kegiatan'
+                : 'Hasil Kegiatan';
+            document.getElementById('activeTaskSubtitle').textContent = isActive
+                ? `Starts: ${formatTaskDateTime(getTaskStartedAt(taskObj))} · Batas: ${formatTaskDateTime(getTaskDeadline(taskObj))}`
+                : `Starts: ${formatTaskDateTime(getTaskStartedAt(taskObj))} · Finish: ${formatTaskDateTime(taskObj.finishedAt)}`;
+
             const container = document.getElementById('taskListContainer');
-            container.innerHTML = taskObj.tasks.map((t, idx) => `
-                <div class="task-row-item ${t.done ? 'completed' : ''}" id="taskRow_${idx}">
-                    <input type="checkbox" class="task-checkbox" ${t.done ? 'checked' : ''} onchange="toggleTaskDone(${idx})">
+            const activityItems = normalizeActivityItems(taskObj.tasks, taskObj.bmi, taskObj.status === 'active');
+            taskObj.tasks = activityItems;
+            container.innerHTML = activityItems.map((t, idx) => {
+                const missed = !isActive && !t.done;
+                const rowClass = t.done ? 'completed' : (missed ? 'missed' : '');
+                return `
+                <div class="task-row-item ${rowClass} ${isActive ? '' : 'locked'}" id="taskRow_${idx}">
+                    <input type="checkbox" class="task-checkbox" ${t.done ? 'checked' : ''} ${isActive ? '' : 'disabled'} onchange="toggleTaskDone(${idx})">
                     <span class="task-label">${t.title}</span>
                 </div>
-            `).join('');
+            `}).join('');
 
-            document.getElementById('taskActionFooter').style.display = 'block';
+            document.getElementById('taskActionFooter').style.display = isActive ? 'block' : 'none';
         }
 
-        window.toggleTaskDone = function(idx) {
-            if (!pendingTaskObj) return;
-            pendingTaskObj.tasks[idx].done = !pendingTaskObj.tasks[idx].done;
-            const row = document.getElementById(`taskRow_${idx}`);
-            if (pendingTaskObj.tasks[idx].done) {
-                row.classList.add('completed');
-            } else {
-                row.classList.remove('completed');
+        window.toggleTaskDone = async function(idx) {
+            if (!currentUser || !activeTaskObj || activeTaskObj.status !== 'active') return;
+            if (Date.now() >= getTaskDeadline(activeTaskObj)) {
+                try {
+                    await finalizeExpiredTasks([activeTaskObj], currentUser.uid);
+                } catch (error) {
+                    console.error('Gagal mengunci checklist kegiatan:', error);
+                    showToast('Gagal menyimpan hasil kegiatan otomatis: ' + error.message, true);
+                }
+                showToast('Batas waktu telah berakhir. Checklist tidak dapat diubah.', true);
+                return;
+            }
+
+            const currentActivities = normalizeActivityItems(activeTaskObj.tasks, activeTaskObj.bmi, true);
+            const updatedTasks = currentActivities.map((task, taskIndex) =>
+                taskIndex === idx ? { ...task, done: !task.done } : task
+            );
+            const previousTasks = activeTaskObj.tasks;
+            activeTaskObj.tasks = updatedTasks;
+            renderActiveTasks(activeTaskObj);
+
+            try {
+                await updateDoc(
+                    doc(db, 'artifacts', appId, 'users', currentUser.uid, 'tasks', activeTaskObj.id),
+                    { tasks: updatedTasks }
+                );
+            } catch (error) {
+                activeTaskObj.tasks = previousTasks;
+                renderActiveTasks(activeTaskObj);
+                showToast('Gagal menyimpan checklist: ' + error.message, true);
             }
         };
 
@@ -1207,30 +1388,22 @@
         };
 
         window.submitActiveTaskPermanently = async function() {
-            if (!currentUser || !pendingTaskObj) return;
+            if (!currentUser || !activeTaskObj || activeTaskObj.status !== 'active') return;
 
             try {
-                const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'tasks');
-                await addDoc(colRef, {
-                    category: pendingTaskObj.category,
-                    bmi: pendingTaskObj.bmi,
-                    color: pendingTaskObj.color,
-                    textColor: pendingTaskObj.textColor,
-                    bgColor: pendingTaskObj.bgColor,
-                    tasks: pendingTaskObj.tasks,
-                    dateStr: pendingTaskObj.dateStr,
-                    timestamp: pendingTaskObj.timestamp
-                });
-
+                const finishedAt = Date.now() >= getTaskDeadline(activeTaskObj)
+                    ? getTaskDeadline(activeTaskObj)
+                    : Date.now();
+                await updateDoc(
+                    doc(db, 'artifacts', appId, 'users', currentUser.uid, 'tasks', activeTaskObj.id),
+                    { status: 'completed', finishedAt }
+                );
                 closeConfirmTaskSaveModal();
-                pendingTaskObj = null;
-
-                document.getElementById('taskListContainer').innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Task aktif telah dikumpulkan dan tersimpan secara permanen!</p>';
-                document.getElementById('taskActionFooter').style.display = 'none';
-
-                showToast("Task berhasil dikumpulkan dan tersimpan permanen!");
+                activeTaskObj = { ...activeTaskObj, status: 'completed', finishedAt };
+                renderActiveTasks(activeTaskObj);
+                showToast('Kegiatan selesai dan tersimpan di riwayat.');
             } catch(e) {
-                showToast("Gagal menyimpan task: " + e.message, true);
+                showToast('Gagal menyimpan kegiatan: ' + e.message, true);
             }
         };
 
@@ -1239,27 +1412,93 @@
             unsubscribeTasksListener = onSnapshot(colRef, (snapshot) => {
                 let list = [];
                 snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-                list.sort((a, b) => b.timestamp - a.timestamp);
-                
+                list.sort((a, b) => getTaskStartedAt(b) - getTaskStartedAt(a));
+
+                finalizeExpiredTasks(list, userId).catch(error => {
+                    console.error('Gagal menyelesaikan kegiatan yang melewati batas waktu:', error);
+                    showToast('Gagal menyimpan hasil kegiatan otomatis: ' + error.message, true);
+                });
+                scheduleTaskDeadline(list, userId);
+
+                const activeTasks = list.filter(task => task.status === 'active');
+                if (activeTasks.length > 0) {
+                    const savedActiveTask = activeTasks[0];
+                    const normalizedActivities = normalizeActivityItems(
+                        savedActiveTask.tasks,
+                        savedActiveTask.bmi,
+                        true
+                    );
+                    const activitiesNeedRepair =
+                        JSON.stringify(savedActiveTask.tasks) !== JSON.stringify(normalizedActivities);
+                    activeTaskObj = {
+                        ...savedActiveTask,
+                        tasks: normalizedActivities
+                    };
+                    renderActiveTasks(activeTaskObj);
+                    if (activitiesNeedRepair) {
+                        updateDoc(
+                            doc(db, 'artifacts', appId, 'users', userId, 'tasks', savedActiveTask.id),
+                            { tasks: normalizedActivities }
+                        ).catch(error => {
+                            console.error('Gagal memperbaiki daftar kegiatan tersimpan:', error);
+                            showToast('Gagal memperbaiki daftar kegiatan: ' + error.message, true);
+                        });
+                    }
+                } else {
+                    activeTaskObj = null;
+                    document.getElementById('activeTaskTitle').textContent = 'List Kegiatan';
+                    document.getElementById('activeTaskSubtitle').textContent = 'Belum ada kegiatan.';
+                    document.getElementById('taskListContainer').innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:20px;">Belum ada kegiatan. Hitung BMI di tab Kalkulator untuk melihat rekomendasi.</p>';
+                    document.getElementById('taskActionFooter').style.display = 'none';
+                }
+
+                const history = list.filter(item => item.status !== 'active');
                 const container = document.getElementById('savedTaskHistoryList');
-                if (list.length === 0) {
-                    container.innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:10px;">Belum ada riwayat Kegiatan.</p>';
+                if (history.length === 0) {
+                    container.innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:10px;">Belum ada riwayat kegiatan.</p>';
                     return;
                 }
 
-                container.innerHTML = list.map(item => `
+                container.innerHTML = history.map(item => {
+                    const itemTasks = normalizeActivityItems(item.tasks, item.bmi);
+                    const completedCount = itemTasks.filter(task => task.done).length;
+                    const startedAt = item.startedAt || null;
+                    const finishedAt = item.finishedAt || null;
+                    const completionLabel = !finishedAt
+                        ? 'Riwayat tersimpan'
+                        : item.deadlineAt && finishedAt >= item.deadlineAt
+                            ? 'Ditutup otomatis saat batas waktu'
+                            : 'Diselesaikan lebih awal';
+                    return `
                     <div class="history-item">
-                        <div class="history-main">
-                            <div class="history-score-chip" style="background: ${item.bgColor}; color: ${item.textColor}; font-size:12px;">
+                        <div style="width:100%;">
+                          <div class="history-main">
+                            <div class="history-score-chip" style="background: ${item.bgColor || '#f1f5f9'}; color: ${item.textColor || '#475569'}; font-size:12px;">
                                 ${item.category}
                             </div>
                             <div class="history-info">
-                                <span class="history-status-txt">Terkumpul ${item.tasks.filter(t=>t.done).length}/${item.tasks.length} Selesai</span>
-                                <span class="history-date-txt">${item.dateStr}</span>
+                                <span class="history-status-txt">Selesai ${completedCount}/${itemTasks.length}</span>
+                                <span class="history-date-txt">${completionLabel}</span>
+                                <div class="task-history-times">
+                                    <span>Starts: ${formatTaskDateTime(startedAt)}</span>
+                                    <span>Finish: ${formatTaskDateTime(finishedAt)}</span>
+                                </div>
                             </div>
+                          </div>
+                          <div class="task-result-list">
+                            ${itemTasks.map(task => `
+                                <div class="task-row-item ${task.done ? 'completed' : 'missed'} locked">
+                                    <input type="checkbox" class="task-checkbox" ${task.done ? 'checked' : ''} disabled>
+                                    <span class="task-label">${task.title}</span>
+                                </div>
+                            `).join('')}
+                          </div>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
+            }, error => {
+                console.error('Gagal memuat riwayat kegiatan:', error);
+                showToast('Gagal memuat riwayat kegiatan: ' + error.message, true);
             });
         }
 
@@ -1290,7 +1529,7 @@
                     });
                 }
 
-                showToast("Item riwayat & task terasosiasi berhasil dihapus.");
+                showToast("Riwayat BMI dan kegiatan terkait berhasil dihapus.");
             } catch(err) {
                 showToast("Gagal menghapus: " + err.message, true);
             }
@@ -1502,8 +1741,8 @@
             document.getElementById('appSidebar').classList.remove('active');
             document.getElementById('overlayBackdrop').classList.remove('active');
         };
-        
+    //<!-- ahh 1700 baris code  -->    
     </script>
-    <!-- Genapkan 1500 baris code  -->
+    
 </body>
 </html>

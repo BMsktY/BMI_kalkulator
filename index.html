@@ -979,12 +979,21 @@
         }
 
         // AUTHENTICATION LOGIC
+        function setRegisterFieldsEnabled(enabled) {
+            document.querySelectorAll('#registerFields input, #registerFields select').forEach((field) => {
+                field.disabled = !enabled;
+            });
+        }
+
+        setRegisterFieldsEnabled(false);
+
         window.toggleAuthMode = function(e) {
             e.preventDefault();
             isRegisterMode = !isRegisterMode;
             document.getElementById('authTitle').textContent = isRegisterMode ? 'Buat Akun bodyfit' : 'Masuk ke bodyfit';
             document.getElementById('authSubtitle').textContent = isRegisterMode ? 'Daftar untuk memantau BMI dan olahraga harian.' : 'Silakan masuk untuk menyimpan riwayat BMI.';
             document.getElementById('registerFields').style.display = isRegisterMode ? 'flex' : 'none';
+            setRegisterFieldsEnabled(isRegisterMode);
             document.getElementById('btnAuthSubmit').textContent = isRegisterMode ? 'Daftar Sekarang' : 'Masuk';
             document.getElementById('authSwitchText').textContent = isRegisterMode ? 'Sudah punya akun?' : 'Belum punya akun?';
             document.getElementById('authSwitchLink').textContent = isRegisterMode ? 'Masuk di sini' : 'Daftar sekarang';
@@ -1234,7 +1243,7 @@
                 
                 const container = document.getElementById('savedTaskHistoryList');
                 if (list.length === 0) {
-                    container.innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:10px;">Belum ada riwayat task permanen.</p>';
+                    container.innerHTML = '<p style="font-size:13px; color:var(--muted); text-align:center; padding:10px;">Belum ada riwayat Kegiatan.</p>';
                     return;
                 }
 
@@ -1498,4 +1507,3 @@
     <!-- Genapkan 1500 baris code  -->
 </body>
 </html>
-

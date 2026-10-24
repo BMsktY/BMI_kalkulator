@@ -319,7 +319,13 @@
         .toast-box.active { transform: translateY(0); opacity: 1; }
 
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
+            .sidebar {
+                left: auto;
+                right: 0;
+                border-right: 0;
+                border-left: 1px solid var(--line);
+                transform: translateX(100%);
+            }
             .sidebar.active { transform: translateX(0); }
             .overlay-backdrop.active { display: block; }
             .main-content { width: 100%; margin-left: 0; padding: 76px 16px 16px; }
@@ -489,7 +495,7 @@
                 <!-- INTEGRATED CHART & HISTORY SECTION -->
                 <section class="card chart-section">
                     <div class="chart-header">
-                        <h3>Grafik Perkembangan BMI (5 Data Terbaru)</h3>
+                        <h3>Grafik Perkembangan BMI</h3>
                     </div>
                     
                     <div class="chart-container-scroll">
@@ -501,7 +507,7 @@
 
                     <div class="history-section">
                         <div class="history-header">
-                            <span class="history-title">Riwayat Perhitungan Terkini</span>
+                            <span class="history-title">Riwayat Perhitungan BMI</span>
                         </div>
                         <div class="history-list" id="historyList">
                             <!-- Items dynamically populated -->
@@ -1741,7 +1747,7 @@
             document.getElementById('appSidebar').classList.remove('active');
             document.getElementById('overlayBackdrop').classList.remove('active');
         };
-    //<!-- ahh 1700 baris code  -->    
+   
     </script>
     
 </body>

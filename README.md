@@ -139,4 +139,4 @@ Aplikasi bodyfit tersedia melalui GitHub Pages:
 
 ## Pengembang
 
-Proyek ini dikembangkan untuk kebutuhan pemantauan kesehatan mandiri dan dikelola oleh [BMsktY](https://github.com/BMsktY).
+Proyek ini dikembangkan untuk kebutuhan pemantauan kesehatan mandiri dan dikelola oleh [BMsktY](https://github.com/BMsktY).//
